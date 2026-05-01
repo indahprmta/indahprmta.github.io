@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Learning Persamaan Kuadrat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .math-card { transition: transform 0.2s; }
+        .math-card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Navigation -->
+    <nav class="bg-blue-600 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <i class="fas fa-square-root-alt"></i> KuadratKu
+            </h1>
+            <div class="hidden md:flex gap-6">
+                <a href="#materi" class="hover:text-blue-200">Materi</a>
+                <a href="#rumus" class="hover:text-blue-200">Rumus</a>
+                <a href="#latihan" class="hover:text-blue-200">Latihan</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-blue-700 text-white py-16 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-extrabold mb-4">Kuasai Persamaan Kuadrat dengan Mudah</h2>
+            <p class="text-xl opacity-90">Pelajari metode mencari akar, hubungan antar akar, dan uji kemampuanmu di sini.</p>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-12">
+        
+        <!-- Section: Pengertian -->
+        <section id="materi" class="mb-16">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-2 bg-blue-600 rounded"></div>
+                <h3 class="text-2xl font-bold">Akar-Akar Persamaan Kuadrat</h3>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+                <p class="mb-4">Bentuk umum persamaan kuadrat adalah:</p>
+                <div class="bg-slate-100 p-4 rounded-lg text-center text-2xl font-mono my-4">
+                    ax² + bx + c = 0
+                </div>
+                <p class="mb-4">Ada tiga cara utama untuk mencari akar-akar ($x_1$ dan $x_2$):</p>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="p-4 border rounded-lg bg-blue-50">
+                        <h4 class="font-bold text-blue-700 mb-2">1. Faktorisasi</h4>
+                        <p class="text-sm italic">Mencari dua angka yang jika dikali hasilnya ac dan jika dijumlah hasilnya b.</p>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-green-50">
+                        <h4 class="font-bold text-green-700 mb-2">2. Kuadrat Sempurna</h4>
+                        <p class="text-sm italic">Mengubah bentuk menjadi (x + p)² = q.</p>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-purple-50">
+                        <h4 class="font-bold text-purple-700 mb-2">3. Rumus ABC</h4>
+                        <p class="text-sm font-mono mt-1">$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Jumlah & Selisih -->
+        <section id="rumus" class="mb-16">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-2 bg-orange-600 rounded"></div>
+                <h3 class="text-2xl font-bold">Jumlah dan Hasil Kali Akar</h3>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h4 class="font-bold mb-4 flex items-center gap-2"><i class="fas fa-plus-circle text-orange-500"></i> Rumus Dasar</h4>
+                    <ul class="space-y-4">
+                        <li class="flex justify-between border-b pb-2">
+                            <span>Jumlah Akar ($x_1 + x_2$)</span>
+                            <span class="font-bold font-mono">-b / a</span>
+                        </li>
+                        <li class="flex justify-between border-b pb-2">
+                            <span>Hasil Kali Akar ($x_1 \cdot x_2$)</span>
+                            <span class="font-bold font-mono">c / a</span>
+                        </li>
+                        <li class="flex justify-between border-b pb-2">
+                            <span>Selisih Akar ($|x_1 - x_2|$)</span>
+                            <span class="font-bold font-mono">√D / a</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h4 class="font-bold mb-4 flex items-center gap-2"><i class="fas fa-star text-yellow-500"></i> Rumus Pengembangan</h4>
+                    <ul class="space-y-4">
+                        <li class="flex justify-between border-b pb-2 text-sm">
+                            <span>$x_1^2 + x_2^2$</span>
+                            <span class="font-bold">$(x_1 + x_2)^2 - 2x_1x_2$</span>
+                        </li>
+                        <li class="flex justify-between border-b pb-2 text-sm">
+                            <span>$1/x_1 + 1/x_2$</span>
+                            <span class="font-bold">$(x_1 + x_2) / (x_1 \cdot x_2)$</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example Section -->
+        <section class="mb-16">
+            <div class="bg-slate-800 text-white p-8 rounded-2xl">
+                <h3 class="text-2xl font-bold mb-4">Contoh Soal</h3>
+                <div class="space-y-6">
+                    <div class="border-l-4 border-blue-400 pl-4">
+                        <p class="font-semibold italic">Diketahui persamaan x² - 5x + 6 = 0. Tentukan akar-akarnya dan jumlah akarnya!</p>
+                        <div class="mt-4 text-slate-300 text-sm">
+                            <p><strong>Penyelesaian:</strong></p>
+                            <p>1. Faktorisasi: (x - 2)(x - 3) = 0, maka x₁ = 2 dan x₂ = 3.</p>
+                            <p>2. Jumlah Akar: x₁ + x₂ = 2 + 3 = 5. (Atau rumus -b/a = -(-5)/1 = 5)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="latihan" class="mb-16">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-8 w-2 bg-green-600 rounded"></div>
+                <h3 class="text-2xl font-bold">Latihan Interaktif</h3>
+            </div>
+
+            <div id="quiz-container" class="space-y-6">
+                <!-- Question 1 -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <p class="font-bold mb-4">1. Berapakah jumlah akar ($x_1 + x_2$) dari persamaan 2x² - 8x + 6 = 0?</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <button onclick="checkAnswer(this, false)" class="text-left p-3 border rounded hover:bg-slate-50">A. -4</button>
+                        <button onclick="checkAnswer(this, true)" class="text-left p-3 border rounded hover:bg-slate-50">B. 4</button>
+                        <button onclick="checkAnswer(this, false)" class="text-left p-3 border rounded hover:bg-slate-50">C. 2</button>
+                        <button onclick="checkAnswer(this, false)" class="text-left p-3 border rounded hover:bg-slate-50">D. -2</button>
+                    </div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <p class="font-bold mb-4">2. Jika akar-akar dari x² + 3x - 10 = 0 adalah $x_1$ dan $x_2$, berapakah hasil kali akarnya?</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <button onclick="checkAnswer(this, false)" class="text-left p-3 border rounded hover:bg-slate-50">A. 10</button>
+                        <button onclick="checkAnswer(this, false)" class="text-left p-3 border rounded hover:bg-slate-50">B. -3</button>
+                        <button onclick="checkAnswer(this, true)" class="text-left p-3 border rounded hover:bg-slate-50">C. -10</button>
+                        <button onclick="checkAnswer(this, false)" class="text-left p-3 border rounded hover:bg-slate-50">D. 5</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="feedback" class="mt-6 hidden p-4 rounded-lg text-center font-bold"></div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-8 text-center">
+        <p>&copy; 2024 Modul Digital Matematika. Dibuat untuk belajar lebih asik.</p>
+    </footer>
+
+    <script>
+        function checkAnswer(element, isCorrect) {
+            // Reset siblings colors
+            const parent = element.parentElement;
+            const buttons = parent.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.className = "text-left p-3 border rounded hover:bg-slate-50";
+                btn.disabled = true;
+            });
+
+            if (isCorrect) {
+                element.classList.add('bg-green-100', 'border-green-500', 'text-green-700');
+                showNotification("Benar sekali! Lanjutkan belajar.", "green");
+            } else {
+                element.classList.add('bg-red-100', 'border-red-500', 'text-red-700');
+                showNotification("Kurang tepat. Coba perhatikan rumusnya kembali.", "red");
+            }
+        }
+
+        function showNotification(msg, type) {
+            const fb = document.getElementById('feedback');
+            fb.innerText = msg;
+            fb.className = `mt-6 p-4 rounded-lg text-center font-bold bg-${type}-100 text-${type}-700 block`;
+            
+            setTimeout(() => {
+                fb.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
