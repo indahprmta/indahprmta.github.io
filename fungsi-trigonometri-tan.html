@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edukasi Trigonometri: Fungsi Tangen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#1e40af',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- MathJax for rendering mathematical formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md fixed w-full z-50 top-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-shapes text-primary text-2xl mr-2"></i>
+                    <span class="font-bold text-xl text-slate-800">TrigoWeb</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#materi" class="text-slate-600 hover:text-primary transition">Materi</a>
+                    <a href="#tabel" class="text-slate-600 hover:text-primary transition">Sudut Istimewa</a>
+                    <a href="#grafik" class="text-slate-600 hover:text-primary transition">Grafik</a>
+                    <a href="#kalkulator" class="text-slate-600 hover:text-primary transition">Kalkulator</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="pt-24 pb-12 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">
+                Memahami Fungsi <span class="text-primary">Tangen (tan)</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-8">
+                Platform interaktif untuk mempelajari konsep dasar, nilai sudut, grafik, dan perhitungan fungsi trigonometri tangen dengan mudah dan menyenangkan.
+            </p>
+            <a href="#materi" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-full text-white bg-primary hover:bg-secondary transition shadow-lg">
+                Mulai Belajar <i class="fas fa-arrow-down ml-2"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
+
+        <!-- Materi Section -->
+        <section id="materi" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-800">Apa itu Tangen?</h2>
+                <div class="w-16 h-1 bg-primary mx-auto mt-4 rounded"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="glass-card p-8 rounded-2xl">
+                    <h3 class="text-xl font-semibold mb-4 text-slate-800">Definisi pada Segitiga Siku-siku</h3>
+                    <p class="text-slate-600 mb-4 leading-relaxed">
+                        Dalam trigonometri, <strong>Tangen</strong> (disingkat <em>tan</em>) dari sebuah sudut pada segitiga siku-siku adalah perbandingan antara panjang sisi yang berada di <strong>depan</strong> sudut tersebut dengan panjang sisi yang berada di <strong>samping</strong> sudut.
+                    </p>
+                    <div class="bg-blue-50 p-4 rounded-xl mb-4 border border-blue-100 text-center">
+                        <p class="text-lg">$$ \tan(\theta) = \frac{\text{Sisi Depan}}{\text{Sisi Samping}} $$</p>
+                    </div>
+                    <p class="text-slate-600 mb-4 leading-relaxed">
+                        Tangen juga dapat didefinisikan sebagai rasio antara fungsi sinus dan kosinus dari suatu sudut:
+                    </p>
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-center">
+                        <p class="text-lg">$$ \tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)} $$</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-center items-center p-8 bg-white rounded-2xl shadow-sm border border-slate-100">
+                    <!-- SVG Triangle Illustration -->
+                    <svg viewBox="0 0 300 250" class="w-full max-w-sm">
+                        <!-- Segitiga -->
+                        <polygon points="50,200 250,200 250,50" fill="rgba(59, 130, 246, 0.1)" stroke="#3b82f6" stroke-width="3" stroke-linejoin="round"/>
+                        
+                        <!-- Simbol Siku-siku -->
+                        <polyline points="230,200 230,180 250,180" fill="none" stroke="#ef4444" stroke-width="2"/>
+                        
+                        <!-- Simbol Sudut Theta -->
+                        <path d="M 90 200 A 40 40 0 0 0 82 176" fill="none" stroke="#10b981" stroke-width="2"/>
+                        <text x="100" y="190" font-size="16" font-family="sans-serif" font-style="italic" fill="#10b981">θ</text>
+                        
+                        <!-- Label Sisi -->
+                        <text x="150" y="225" font-size="14" font-family="sans-serif" font-weight="bold" text-anchor="middle" fill="#475569">Samping (x)</text>
+                        <text x="265" y="130" font-size="14" font-family="sans-serif" font-weight="bold" fill="#475569" transform="rotate(90 265,130)">Depan (y)</text>
+                        <text x="120" y="110" font-size="14" font-family="sans-serif" font-weight="bold" fill="#475569" transform="rotate(-36 120,110)">Miring (r)</text>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabel Sudut Istimewa Section -->
+        <section id="tabel" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-800">Nilai Sudut Istimewa</h2>
+                <div class="w-16 h-1 bg-primary mx-auto mt-4 rounded"></div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700">
+                                <th class="p-4 border-b-2 border-slate-200 font-semibold text-center">Sudut (θ)</th>
+                                <th class="p-4 border-b-2 border-slate-200 font-semibold text-center">0°</th>
+                                <th class="p-4 border-b-2 border-slate-200 font-semibold text-center">30°</th>
+                                <th class="p-4 border-b-2 border-slate-200 font-semibold text-center">45°</th>
+                                <th class="p-4 border-b-2 border-slate-200 font-semibold text-center">60°</th>
+                                <th class="p-4 border-b-2 border-slate-200 font-semibold text-center">90°</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-4 border-b border-slate-200 font-medium text-slate-800 text-center bg-slate-50">Radian</td>
+                                <td class="p-4 border-b border-slate-200 text-center">0</td>
+                                <td class="p-4 border-b border-slate-200 text-center">$$ \frac{\pi}{6} $$</td>
+                                <td class="p-4 border-b border-slate-200 text-center">$$ \frac{\pi}{4} $$</td>
+                                <td class="p-4 border-b border-slate-200 text-center">$$ \frac{\pi}{3} $$</td>
+                                <td class="p-4 border-b border-slate-200 text-center">$$ \frac{\pi}{2} $$</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-4 border-b border-slate-200 font-bold text-primary text-center bg-blue-50">tan(θ)</td>
+                                <td class="p-4 border-b border-slate-200 text-center text-lg">0</td>
+                                <td class="p-4 border-b border-slate-200 text-center text-lg">$$ \frac{1}{\sqrt{3}} \text{ atau } \frac{\sqrt{3}}{3} $$</td>
+                                <td class="p-4 border-b border-slate-200 text-center text-lg">1</td>
+                                <td class="p-4 border-b border-slate-200 text-center text-lg">$$ \sqrt{3} $$</td>
+                                <td class="p-4 border-b border-slate-200 text-center text-lg text-red-500 font-semibold">∞ (Tak Terdefinisi)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <p class="text-sm text-slate-500 mt-4 text-center">
+                * Pada sudut 90° dan kelipatan ganjilnya (270°, 450°, dst.), nilai tangen tidak terdefinisi karena cosinus sudut tersebut adalah 0 (pembagian dengan nol).
+            </p>
+        </section>
+
+        <!-- Grafik Section -->
+        <section id="grafik" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-800">Grafik Fungsi Tangen</h2>
+                <div class="w-16 h-1 bg-primary mx-auto mt-4 rounded"></div>
+                <p class="text-slate-600 mt-4 max-w-2xl mx-auto">
+                    Grafik tangen memiliki bentuk kurva yang berulang setiap 180° (π radian). Garis putus-putus merah menunjukkan asimtot vertikal, yaitu di mana fungsi tidak terdefinisi.
+                </p>
+            </div>
+
+            <div class="glass-card p-4 rounded-2xl overflow-hidden flex justify-center">
+                <!-- Canvas for Graph -->
+                <canvas id="tanCanvas" width="800" height="400" class="w-full max-w-4xl bg-white rounded-xl border border-slate-200"></canvas>
+            </div>
+        </section>
+
+        <!-- Kalkulator Interaktif Section -->
+        <section id="kalkulator" class="scroll-mt-24 mb-24">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-800">Kalkulator Tangen</h2>
+                <div class="w-16 h-1 bg-primary mx-auto mt-4 rounded"></div>
+            </div>
+
+            <div class="max-w-md mx-auto glass-card p-8 rounded-2xl text-center">
+                <label for="angleInput" class="block text-sm font-medium text-slate-700 mb-2">Masukkan Sudut (Derajat °)</label>
+                <div class="flex items-center justify-center space-x-4 mb-6">
+                    <input type="number" id="angleInput" placeholder="Contoh: 45" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-lg text-center transition">
+                </div>
+                <button onclick="calculateTan()" class="w-full bg-primary hover:bg-secondary text-white font-bold py-3 px-6 rounded-lg transition shadow-md flex justify-center items-center">
+                    <i class="fas fa-calculator mr-2"></i> Hitung Nilai tan
+                </button>
+
+                <div id="resultContainer" class="mt-6 hidden">
+                    <div class="p-4 bg-slate-100 rounded-lg border border-slate-200">
+                        <p class="text-sm text-slate-500 mb-1">Hasil:</p>
+                        <p id="calcResult" class="text-2xl font-bold text-slate-800"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-300 py-8 text-center">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="mb-2"><i class="fas fa-shapes text-primary mr-2"></i> Platform Edukasi TrigoWeb</p>
+            <p class="text-sm text-slate-500">© 2026. Dibuat untuk tujuan pembelajaran matematika interaktif.</p>
+        </div>
+    </footer>
+
+    <!-- Interactive Scripts -->
+    <script>
+        // --- Graph Drawing Logic ---
+        function drawTanGraph() {
+            const canvas = document.getElementById('tanCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Graph configurations
+            const scaleX = width / 720; // 720 degrees range (-360 to 360)
+            const scaleY = height / 10; // y range from -5 to 5
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            // Draw Grid and Axes
+            ctx.beginPath();
+            ctx.strokeStyle = '#e2e8f0'; // Tailwind slate-200
+            ctx.lineWidth = 1;
+            
+            // Vertical grid lines every 90 degrees
+            for (let deg = -360; deg <= 360; deg += 90) {
+                let x = centerX + (deg * scaleX);
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+            }
+            // Horizontal grid lines
+            for (let yVal = -5; yVal <= 5; yVal++) {
+                let y = centerY - (yVal * scaleY);
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+            }
+            ctx.stroke();
+
+            // Draw Main Axes
+            ctx.beginPath();
+            ctx.strokeStyle = '#64748b'; // Tailwind slate-500
+            ctx.lineWidth = 2;
+            // X-axis
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            // Y-axis
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, height);
+            ctx.stroke();
+
+            // Axis Labels
+            ctx.fillStyle = '#475569';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            for (let deg = -360; deg <= 360; deg += 90) {
+                if(deg !== 0) {
+                    let x = centerX + (deg * scaleX);
+                    ctx.fillText(deg + '°', x, centerY + 15);
+                }
+            }
+            ctx.textAlign = 'right';
+            for (let yVal = -4; yVal <= 4; yVal += 2) {
+                if(yVal !== 0) {
+                    let y = centerY - (yVal * scaleY);
+                    ctx.fillText(yVal, centerX - 5, y + 4);
+                }
+            }
+
+            // Draw Asymptotes (Red dashed lines at 90, 270, -90, -270)
+            ctx.beginPath();
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = '#ef4444'; // Tailwind red-500
+            ctx.lineWidth = 1.5;
+            for (let deg = -270; deg <= 270; deg += 180) {
+                let x = centerX + (deg * scaleX);
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset dash
+
+            // Draw Tangent Curve
+            ctx.beginPath();
+            ctx.strokeStyle = '#3b82f6'; // Tailwind blue-500
+            ctx.lineWidth = 2.5;
+
+            let isDrawing = false;
+            for (let deg = -360; deg <= 360; deg += 1) {
+                let rad = deg * Math.PI / 180;
+                let tanVal = Math.tan(rad);
+                
+                let x = centerX + (deg * scaleX);
+                let y = centerY - (tanVal * scaleY);
+
+                // Prevent drawing connection lines across the asymptotes
+                if (Math.abs(tanVal) > 10) {
+                    isDrawing = false;
+                    continue;
+                }
+
+                if (!isDrawing) {
+                    ctx.moveTo(x, y);
+                    isDrawing = true;
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+        }
+
+        // Initialize Graph on load
+        window.addEventListener('load', drawTanGraph);
+
+        // --- Calculator Logic ---
+        function calculateTan() {
+            const inputElement = document.getElementById('angleInput');
+            const resultContainer = document.getElementById('resultContainer');
+            const calcResult = document.getElementById('calcResult');
+            
+            let angle = parseFloat(inputElement.value);
+
+            if (isNaN(angle)) {
+                alert("Silakan masukkan angka yang valid.");
+                return;
+            }
+
+            resultContainer.classList.remove('hidden');
+
+            // Handle Asymptotes (90, 270, 450, etc)
+            // angle = 90 + k * 180
+            if (Math.abs(angle) % 180 === 90) {
+                calcResult.innerHTML = `<span class="text-red-500">Tak Terdefinisi (∞)</span>`;
+                return;
+            }
+
+            // Calculate tan (convert degree to radians)
+            let rad = angle * (Math.PI / 180);
+            let tanValue = Math.tan(rad);
+
+            // Handle precision issues for numbers extremely close to 0 (e.g., tan(180))
+            if (Math.abs(tanValue) < 1e-10) {
+                tanValue = 0;
+            }
+
+            // Format string
+            calcResult.innerHTML = `tan(${angle}°) = <span class="text-primary">${parseFloat(tanValue.toFixed(4))}</span>`;
+        }
+
+        // Allow pressing 'Enter' on input to trigger calculation
+        document.getElementById('angleInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                calculateTan();
+            }
+        });
+
+    </script>
+</body>
+</html>
