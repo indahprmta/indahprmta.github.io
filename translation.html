@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Translation Explorer</title>
+    <!-- Tailwind CSS untuk Desain UI Modern -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons untuk Ikon Bersih -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- MathJax untuk Render Persamaan Matematika LaTeX -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header / Navigasi Aplikasi -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-md shadow-indigo-200">
+                        <i data-lucide="move" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg md:text-xl text-slate-900 tracking-tight">Translation (Geometry)</h1>
+                        <p class="text-xs text-indigo-600 font-semibold tracking-wider uppercase">Interactive Learner</p>
+                    </div>
+                </div>
+                <!-- Navigasi Utama -->
+                <nav class="hidden md:flex space-x-1 bg-slate-100 p-1 rounded-xl">
+                    <button onclick="switchTab('learn')" id="tab-learn" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white text-indigo-600 shadow-sm">
+                        <span class="flex items-center space-x-2"><i data-lucide="book-open" class="w-4 h-4"></i><span>Learn Theory</span></span>
+                    </button>
+                    <button onclick="switchTab('sandbox')" id="tab-sandbox" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-slate-600 hover:text-slate-900">
+                        <span class="flex items-center space-x-2"><i data-lucide="compass" class="w-4 h-4"></i><span>Interactive Sandbox</span></span>
+                    </button>
+                    <button onclick="switchTab('examples')" id="tab-examples" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-slate-600 hover:text-slate-900">
+                        <span class="flex items-center space-x-2"><i data-lucide="lightbulb" class="w-4 h-4"></i><span>Examples</span></span>
+                    </button>
+                    <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-slate-600 hover:text-slate-900 relative">
+                        <span class="flex items-center space-x-2"><i data-lucide="award" class="w-4 h-4"></i><span>Quiz Practice</span></span>
+                        <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                        </span>
+                    </button>
+                </nav>
+                <div class="md:hidden">
+                    <!-- Tombol Menu Seluler -->
+                    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Menu Navigasi Seluler -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-slate-200 px-4 py-3 space-y-2">
+            <button onclick="switchTab('learn'); toggleMobileMenu();" class="w-full flex items-center space-x-3 p-3 rounded-lg text-left text-sm font-medium hover:bg-slate-50 transition-colors">
+                <i data-lucide="book-open" class="text-indigo-600 w-5 h-5"></i><span>Learn Theory</span>
+            </button>
+            <button onclick="switchTab('sandbox'); toggleMobileMenu();" class="w-full flex items-center space-x-3 p-3 rounded-lg text-left text-sm font-medium hover:bg-slate-50 transition-colors">
+                <i data-lucide="compass" class="text-indigo-600 w-5 h-5"></i><span>Interactive Sandbox</span>
+            </button>
+            <button onclick="switchTab('examples'); toggleMobileMenu();" class="w-full flex items-center space-x-3 p-3 rounded-lg text-left text-sm font-medium hover:bg-slate-50 transition-colors">
+                <i data-lucide="lightbulb" class="text-indigo-600 w-5 h-5"></i><span>Examples</span>
+            </button>
+            <button onclick="switchTab('quiz'); toggleMobileMenu();" class="w-full flex items-center space-x-3 p-3 rounded-lg text-left text-sm font-medium hover:bg-slate-50 transition-colors bg-indigo-50 text-indigo-700">
+                <i data-lucide="award" class="text-indigo-600 w-5 h-5"></i><span>Quiz Practice (10 Questions)</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Area Konten Utama -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ================= TAB: LEARN THEORY ================= -->
+        <section id="content-learn" class="tab-content block space-y-8 animate-fadeIn">
+            <!-- Banner Utama -->
+            <div class="bg-gradient-to-r from-indigo-600 to-violet-700 rounded-3xl p-8 md:p-12 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                <div class="relative z-10 max-w-3xl">
+                    <span class="bg-indigo-500/30 text-indigo-200 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">Concept Study</span>
+                    <h2 class="text-3xl md:text-5xl font-black mt-4 leading-tight">What is a Geometric Translation?</h2>
+                    <p class="text-indigo-100 mt-4 text-base md:text-lg leading-relaxed">
+                        A translation slides a geometric figure (pre-image) a certain distance in a specific direction without changing its size, shape, or orientation. Think of it as pushing an object on a flat table!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Kartu Teori Pembelajaran -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Konsep 1 -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="bg-blue-50 text-blue-600 w-12 h-12 rounded-xl flex items-center justify-center mb-6">
+                            <i data-lucide="navigation-2" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">The Translation Vector</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed">
+                            Translation is defined by a vector representing horizontal displacement $a$ (along the x-axis) and vertical displacement $b$ (along the y-axis).
+                        </p>
+                        <div class="bg-slate-50 p-4 rounded-xl mt-4 font-mono text-center text-indigo-600 font-semibold border border-slate-100">
+                            $$T = \begin{pmatrix} a \\ b \end{pmatrix}$$
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Konsep 2 -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="bg-emerald-50 text-emerald-600 w-12 h-12 rounded-xl flex items-center justify-center mb-6">
+                            <i data-lucide="arrow-right-left" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">The General Formula</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed">
+                            To find the coordinates of an image point $P'(x', y')$ translated by $T(a,b)$ from the pre-image $P(x,y)$, we simply add the translation components:
+                        </p>
+                        <div class="bg-slate-50 p-4 rounded-xl mt-4 text-center font-medium text-indigo-600 border border-slate-100">
+                            $$x' = x + a \quad \text{and} \quad y' = y + b$$
+                            $$P(x,y) \xrightarrow{T\begin{pmatrix}a\\b\end{pmatrix}} P'(x+a, y+b)$$
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Konsep 3 -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="bg-violet-50 text-violet-600 w-12 h-12 rounded-xl flex items-center justify-center mb-6">
+                            <i data-lucide="shield-check" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">Key Properties</h3>
+                        <ul class="space-y-3 mt-4 text-slate-600 text-sm">
+                            <li class="flex items-start space-x-2">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5"></i>
+                                <span><strong>Isometry:</strong> Distance is preserved; sizes of shapes stay identical.</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5"></i>
+                                <span><strong>Orientation:</strong> Vertices remain in the same relative clockwise/counter-clockwise order.</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5"></i>
+                                <span><strong>Parallelism:</strong> Parallel lines in the pre-image remain parallel in the image.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panduan Visual Arah Geser -->
+            <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm grid grid-cols-1 lg:grid-cols-2">
+                <div class="p-8 md:p-12 space-y-6 flex flex-col justify-center">
+                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Visual Guide</span>
+                    <h3 class="text-2xl md:text-3xl font-extrabold text-slate-900">Understanding Directions of $a$ and $b$</h3>
+                    <p class="text-slate-600 leading-relaxed">
+                        The direction of translation depends entirely on the sign of the translation components inside vector $\begin{pmatrix} a \\ b \end{pmatrix}$:
+                    </p>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <span class="bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded text-xs">a > 0</span>
+                            <span class="text-sm font-medium text-slate-700">Moves the shape to the <strong>Right</strong></span>
+                        </div>
+                        <div class="flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <span class="bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded text-xs">a < 0</span>
+                            <span class="text-sm font-medium text-slate-700">Moves the shape to the <strong>Left</strong></span>
+                        </div>
+                        <div class="flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <span class="bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded text-xs">b > 0</span>
+                            <span class="text-sm font-medium text-slate-700">Moves the shape <strong>Up</strong></span>
+                        </div>
+                        <div class="flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <span class="bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded text-xs">b < 0</span>
+                            <span class="text-sm font-medium text-slate-700">Moves the shape <strong>Down</strong></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-900 p-8 flex items-center justify-center relative overflow-hidden">
+                    <svg viewBox="0 0 400 300" class="w-full max-w-md">
+                        <g opacity="0.1" stroke="#fff" stroke-width="1">
+                            <line x1="50" y1="0" x2="50" y2="300" />
+                            <line x1="100" y1="0" x2="100" y2="300" />
+                            <line x1="150" y1="0" x2="150" y2="300" />
+                            <line x1="200" y1="0" x2="200" y2="300" />
+                            <line x1="250" y1="0" x2="250" y2="300" />
+                            <line x1="300" y1="0" x2="300" y2="300" />
+                            <line x1="350" y1="0" x2="350" y2="300" />
+                            <line x1="0" y1="50" x2="400" y2="50" />
+                            <line x1="0" y1="100" x2="400" y2="100" />
+                            <line x1="0" y1="150" x2="400" y2="150" />
+                            <line x1="0" y1="200" x2="400" y2="200" />
+                            <line x1="0" y1="250" x2="400" y2="250" />
+                        </g>
+                        <line x1="200" y1="0" x2="200" y2="300" stroke="#475569" stroke-width="2" />
+                        <line x1="0" y1="150" x2="400" y2="150" stroke="#475569" stroke-width="2" />
+                        
+                        <polygon points="100,200 150,200 120,100" fill="#4f46e5" fill-opacity="0.3" stroke="#4f46e5" stroke-width="3" />
+                        <circle cx="100" cy="200" r="5" fill="#4f46e5" />
+                        <text x="85" y="215" fill="#818cf8" font-size="12" font-weight="bold">A(x, y)</text>
+
+                        <path d="M 120,100 L 270,50" stroke="#fbbf24" stroke-width="3" stroke-dasharray="6,4" fill="none" marker-end="url(#arrow)" />
+                        <defs>
+                            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#fbbf24" />
+                            </marker>
+                        </defs>
+                        <text x="180" y="65" fill="#fbbf24" font-size="12" font-weight="bold">Vector T(a, b)</text>
+
+                        <polygon points="250,150 300,150 270,50" fill="#f43f5e" fill-opacity="0.3" stroke="#f43f5e" stroke-width="3" />
+                        <circle cx="250" cy="150" r="5" fill="#f43f5e" />
+                        <text x="240" y="175" fill="#f43f5e" font-size="12" font-weight="bold">A'(x+a, y+b)</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- KOTAK CTA LATIHAN SOAL INTERAKTIF (BARU & SANGAT TERLIHAT) -->
+            <div class="bg-gradient-to-r from-amber-500 to-orange-600 rounded-3xl p-8 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="space-y-2 max-w-xl">
+                    <span class="bg-amber-400/30 text-amber-100 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">Practice Directly</span>
+                    <h3 class="text-2xl md:text-3xl font-bold">Ready to Practice the Questions?</h3>
+                    <p class="text-amber-100 text-sm md:text-base leading-relaxed">
+                        We have prepared <strong>10 interactive multiple-choice practice questions</strong> that you can answer directly inside this app! Get instant scores, stats, and complete mathematical explanations.
+                    </p>
+                </div>
+                <button onclick="switchTab('quiz')" class="bg-white text-orange-600 font-extrabold py-4 px-8 rounded-2xl shadow-lg hover:bg-amber-50 transform hover:-translate-y-1 transition-all flex items-center space-x-3 shrink-0">
+                    <span>Go to Interactive Quiz (10 Qs)</span>
+                    <i data-lucide="award" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ================= TAB: INTERACTIVE SANDBOX ================= -->
+        <section id="content-sandbox" class="tab-content hidden space-y-8 animate-fadeIn">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">Interactive Playground</span>
+                <h2 class="text-3xl font-extrabold text-slate-900">Translation Canvas Sandbox</h2>
+                <p class="text-slate-500 text-sm">
+                    Interact with the system by choosing an object and dragging the sliders to translate it. Observe the coordinates change in real time.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <!-- Panel Kontrol Kiri -->
+                <div class="lg:col-span-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-3">1. Select Shape</h3>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button id="btn-shape-point" onclick="setSandboxShape('point')" class="shape-btn flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-indigo-600 bg-indigo-50/50 text-indigo-600 transition-all">
+                                <i data-lucide="circle" class="w-5 h-5 mb-1"></i>
+                                <span class="text-xs font-semibold">Point</span>
+                            </button>
+                            <button id="btn-shape-segment" onclick="setSandboxShape('segment')" class="shape-btn flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-slate-200 text-slate-500 hover:border-slate-300 transition-all">
+                                <i data-lucide="minus" class="w-5 h-5 mb-1"></i>
+                                <span class="text-xs font-semibold">Line</span>
+                            </button>
+                            <button id="btn-shape-triangle" onclick="setSandboxShape('triangle')" class="shape-btn flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-slate-200 text-slate-500 hover:border-slate-300 transition-all">
+                                <i data-lucide="triangle" class="w-5 h-5 mb-1"></i>
+                                <span class="text-xs font-semibold">Triangle</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-100" />
+
+                    <!-- Slider Translasi -->
+                    <div class="space-y-5">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-slate-900">2. Adjust Translation Vector</h3>
+                            <button onclick="resetSliders()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-all">Reset</button>
+                        </div>
+
+                        <!-- Slider a (Horizontal) -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="font-semibold text-slate-700 flex items-center gap-1">Horizontal ($a$): <span class="font-mono text-indigo-600" id="val-a">3</span></span>
+                                <span class="text-xs text-slate-400">Left / Right</span>
+                            </div>
+                            <input type="range" id="slider-a" min="-8" max="8" value="3" step="1" oninput="updateTranslation()" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                        </div>
+
+                        <!-- Slider b (Vertikal) -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="font-semibold text-slate-700 flex items-center gap-1">Vertical ($b$): <span class="font-mono text-indigo-600" id="val-b">2</span></span>
+                                <span class="text-xs text-slate-400">Down / Up</span>
+                            </div>
+                            <input type="range" id="slider-b" min="-8" max="8" value="2" step="1" oninput="updateTranslation()" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-100" />
+
+                    <!-- Notasi Vektor -->
+                    <div class="bg-indigo-50/50 border border-indigo-100 p-4 rounded-2xl flex items-center justify-between">
+                        <div class="space-y-1">
+                            <span class="text-xs font-semibold text-slate-500">Translation Vector</span>
+                            <div class="text-xl font-bold text-indigo-600 font-mono">
+                                $T = \begin{pmatrix} \color{red}{a} \\ \color{blue}{b} \end{pmatrix} = \begin{pmatrix} \color{red}{3} \\ \color{blue}{2} \end{pmatrix}$
+                            </div>
+                        </div>
+                        <div class="text-xs text-indigo-500 font-medium text-right max-w-[150px]">
+                            Translates every $(x, y)$ coordinate to $(x + \color{red}{a}, y + \color{blue}{b})$.
+                        </div>
+                    </div>
+
+                    <!-- Pemetaan Koordinat Aktif -->
+                    <div class="space-y-3">
+                        <h4 class="text-sm font-bold text-slate-900">Coordinates Mapping:</h4>
+                        <div class="space-y-2 text-xs font-mono" id="sandbox-coords-output">
+                            <!-- Diisi oleh Javascript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bagian Kanan: Koordinat Kartesian Canvas -->
+                <div class="lg:col-span-8 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center">
+                    <div class="w-full flex justify-between items-center mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3.5 h-3.5 rounded-full bg-blue-600 border border-blue-200"></span>
+                            <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">Pre-image (Original)</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3.5 h-3.5 rounded-full bg-rose-600 border border-rose-200"></span>
+                            <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">Image (Translated)</span>
+                        </div>
+                    </div>
+
+                    <!-- Pembungkus Canvas Koordinat -->
+                    <div class="w-full relative aspect-square max-w-[500px] border border-slate-100 rounded-2xl bg-slate-950 overflow-hidden shadow-inner">
+                        <canvas id="cartesianCanvas" class="absolute inset-0 w-full h-full cursor-pointer"></canvas>
+                    </div>
+
+                    <div class="mt-4 text-center text-xs text-slate-400">
+                        * Grid ranges from -10 to 10 on both Axes. Drag the sliders to see coordinates and drawing update!
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= TAB: WORKED EXAMPLES ================= -->
+        <section id="content-examples" class="tab-content hidden space-y-8 animate-fadeIn">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">Guided Problem Solving</span>
+                <h2 class="text-3xl font-extrabold text-slate-900">Step-by-Step Examples</h2>
+                <p class="text-slate-500 text-sm">
+                    Walk through these solved geometric translation problems to master various scenario-based techniques.
+                </p>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Contoh 1 -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="bg-indigo-600/5 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <span class="text-indigo-600 font-bold text-sm tracking-wide uppercase">Example 1: Basic Point Translation</span>
+                        <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">Standard Level</span>
+                    </div>
+                    <div class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <div class="lg:col-span-8 space-y-4">
+                            <p class="font-semibold text-lg text-slate-900">
+                                Translate point $A(-4, 2)$ using the translation vector $T = \begin{pmatrix} 6 \\ -5 \end{pmatrix}$. Find the coordinates of the image point $A'$.
+                            </p>
+                            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-3">
+                                <h4 class="font-bold text-slate-800 text-sm">Solution Walkthrough:</h4>
+                                <ol class="list-decimal list-inside space-y-2 text-sm text-slate-600">
+                                    <li>Identify variables in translation formula: $x = -4$, $y = 2$, $a = 6$, $b = -5$.</li>
+                                    <li>Apply general translation rule: $P(x, y) \rightarrow P'(x+a, y+b)$.</li>
+                                    <li>Substitute coordinates:
+                                        <div class="py-2 pl-4 font-mono text-indigo-600 text-sm">
+                                            $A'(-4 + 6, \, 2 + (-5))$
+                                        </div>
+                                    </li>
+                                    <li>Simplify simple mathematical operations:
+                                        <div class="py-2 pl-4 font-mono text-indigo-600 text-sm">
+                                            $A'(2, \, -3)$
+                                        </div>
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-4 bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col justify-center items-center text-center space-y-3">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Final Answer</span>
+                            <div class="bg-emerald-500 text-white font-mono px-4 py-2 rounded-xl font-bold text-xl shadow-md">
+                                A' (2, -3)
+                            </div>
+                            <span class="text-xs text-slate-500">Point shifted 6 units right and 5 units down.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contoh 2 -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="bg-indigo-600/5 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <span class="text-indigo-600 font-bold text-sm tracking-wide uppercase">Example 2: Finding Original Point (Pre-image)</span>
+                        <span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-bold">Medium Level</span>
+                    </div>
+                    <div class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <div class="lg:col-span-8 space-y-4">
+                            <p class="font-semibold text-lg text-slate-900">
+                                Under a translation $T = \begin{pmatrix} -3 \\ 4 \end{pmatrix}$, the image of point $B$ is $B'(1, -2)$. Find the coordinates of point $B$.
+                            </p>
+                            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-3">
+                                <h4 class="font-bold text-slate-800 text-sm">Solution Walkthrough:</h4>
+                                <ol class="list-decimal list-inside space-y-2 text-sm text-slate-600">
+                                    <li>Given quantities: translated point $B'(1, -2)$, and vector values $a = -3$, $b = 4$. We need to find $B(x, y)$.</li>
+                                    <li>Write the system equations:
+                                        <div class="py-1 pl-4 font-mono text-indigo-600 text-sm">
+                                            $x + a = x' \implies x + (-3) = 1$<br/>
+                                            $y + b = y' \implies y + 4 = -2$
+                                        </div>
+                                    </li>
+                                    <li>Solve each independent equation for $x$ and $y$:
+                                        <div class="py-1 pl-4 font-mono text-indigo-600 text-sm">
+                                            $x = 1 - (-3) = 1 + 3 = 4$<br/>
+                                            $y = -2 - 4 = -6$
+                                        </div>
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-4 bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col justify-center items-center text-center space-y-3">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Final Answer</span>
+                            <div class="bg-emerald-500 text-white font-mono px-4 py-2 rounded-xl font-bold text-xl shadow-md">
+                                B (4, -6)
+                            </div>
+                            <span class="text-xs text-slate-500">To reverse translation, we subtract vector components from image coordinates.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contoh 3 -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="bg-indigo-600/5 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <span class="text-indigo-600 font-bold text-sm tracking-wide uppercase">Example 3: Translating an Equation of a Line</span>
+                        <span class="bg-rose-100 text-rose-700 px-2 py-1 rounded text-xs font-bold">Hard Level</span>
+                    </div>
+                    <div class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <div class="lg:col-span-8 space-y-4">
+                            <p class="font-semibold text-lg text-slate-900">
+                                Find the equation of the line $y = 3x - 1$ after it is translated by $T = \begin{pmatrix} 2 \\ -4 \end{pmatrix}$.
+                            </p>
+                            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-3">
+                                <h4 class="font-bold text-slate-800 text-sm">Solution Walkthrough:</h4>
+                                <ol class="list-decimal list-inside space-y-2 text-sm text-slate-600">
+                                    <li>Represent the translation of general point coordinate variables:
+                                        <div class="py-1 pl-4 font-mono text-indigo-600 text-sm">
+                                            $x' = x + 2 \implies x = x' - 2$<br/>
+                                            $y' = y - 4 \implies y = y' + 4$
+                                        </div>
+                                    </li>
+                                    <li>Substitute these new expressions into our original linear line equation:
+                                        <div class="py-1 pl-4 font-mono text-indigo-600 text-sm">
+                                            $(y' + 4) = 3(x' - 2) - 1$
+                                        </div>
+                                    </li>
+                                    <li>Expand linear products and simplify constants algebraically:
+                                        <div class="py-1 pl-4 font-mono text-indigo-600 text-sm">
+                                            $y' + 4 = 3x' - 6 - 1$<br/>
+                                            $y' + 4 = 3x' - 7$<br/>
+                                            $y' = 3x' - 7 - 4 \implies y' = 3x' - 11$
+                                        </div>
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-4 bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col justify-center items-center text-center space-y-3">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Final Answer</span>
+                            <div class="bg-emerald-500 text-white font-mono px-4 py-2 rounded-xl font-bold text-base shadow-md">
+                                y = 3x - 11
+                            </div>
+                            <span class="text-xs text-slate-500">The line shifts 2 units right and 4 units down, remaining parallel to the original.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= TAB: QUIZ PRACTICE ================= -->
+        <section id="content-quiz" class="tab-content hidden space-y-8 animate-fadeIn">
+            <!-- Tampilan Kartu Awal Kuis -->
+            <div id="quiz-intro-card" class="bg-white border border-slate-200 p-8 rounded-3xl shadow-sm text-center max-w-2xl mx-auto space-y-6">
+                <div class="bg-indigo-100 text-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-inner animate-bounce">
+                    <i data-lucide="book-check" class="w-8 h-8"></i>
+                </div>
+                <div class="space-y-2">
+                    <h2 class="text-3xl font-black text-slate-900">Translation Mastery Quiz</h2>
+                    <p class="text-slate-500 text-sm leading-relaxed">
+                        Test your geometric skills on translation! This quiz contains <strong>10 questions</strong> covering various aspects of translations, vectors, image coordinates, and properties.
+                    </p>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-2xl flex justify-around text-xs text-slate-500 border border-slate-100">
+                    <div class="flex items-center space-x-1"><i data-lucide="help-circle" class="w-4 h-4 text-indigo-500"></i><span>10 MCQ Questions</span></div>
+                    <div class="flex items-center space-x-1"><i data-lucide="clock" class="w-4 h-4 text-indigo-500"></i><span>No Time Limit</span></div>
+                    <div class="flex items-center space-x-1"><i data-lucide="check-circle" class="w-4 h-4 text-indigo-500"></i><span>Instant Feedback</span></div>
+                </div>
+                <button onclick="startQuiz()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-100 transform active:scale-95 transition-all text-base">
+                    Start Quiz Now
+                </button>
+            </div>
+
+            <!-- Tampilan Pengisian Kuis (Aktif) -->
+            <div id="quiz-play-container" class="hidden max-w-3xl mx-auto space-y-6">
+                <!-- Header Status Kuis -->
+                <div class="flex justify-between items-center text-sm font-semibold text-slate-600">
+                    <span class="bg-slate-100 px-3 py-1.5 rounded-full" id="quiz-question-indicator">Question 1 of 10</span>
+                    <div class="flex items-center space-x-1 text-emerald-600">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span id="quiz-score-indicator">Score: 0/10</span>
+                    </div>
+                </div>
+                <!-- Indikator Batang Progres -->
+                <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div id="quiz-progress-bar" class="h-full bg-indigo-600 transition-all duration-300" style="width: 10%"></div>
+                </div>
+
+                <!-- Kartu Pertanyaan -->
+                <div class="bg-white border border-slate-200 p-8 rounded-3xl shadow-sm space-y-6">
+                    <p class="text-lg md:text-xl font-bold text-slate-900 leading-relaxed" id="quiz-question-text">
+                        Loading question...
+                    </p>
+
+                    <!-- Pilihan Ganda -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="quiz-options-grid">
+                        <!-- Diisi secara dinamis oleh Javascript -->
+                    </div>
+
+                    <!-- Blok Pembahasan Jawaban (Instan setelah klik) -->
+                    <div id="quiz-feedback" class="hidden p-5 rounded-2xl border flex items-start space-x-3 transition-all duration-300">
+                        <div id="quiz-feedback-icon" class="p-1 rounded-full mt-0.5">
+                            <!-- Diisi secara dinamis -->
+                        </div>
+                        <div class="space-y-1 flex-1">
+                            <h4 id="quiz-feedback-title" class="font-extrabold text-sm uppercase tracking-wide">Correct!</h4>
+                            <p id="quiz-feedback-body" class="text-xs leading-relaxed">
+                                Explanation here...
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Lanjut -->
+                    <div class="flex justify-end pt-2">
+                        <button id="quiz-next-btn" disabled onclick="nextQuestion()" class="bg-slate-200 text-slate-400 font-bold py-3.5 px-6 rounded-xl cursor-not-allowed hover:shadow-md transition-all flex items-center space-x-2">
+                            <span>Next Question</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kartu Hasil Akhir / Scorecard -->
+            <div id="quiz-result-card" class="hidden bg-white border border-slate-200 p-8 rounded-3xl shadow-sm text-center max-w-2xl mx-auto space-y-6 animate-fadeIn">
+                <div id="trophy-container" class="w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                    <!-- Emoji dinamis sesuai skor -->
+                </div>
+                <div class="space-y-2">
+                    <h3 class="text-3xl font-black text-slate-900" id="result-title">Outstanding Job!</h3>
+                    <p class="text-slate-500 text-sm" id="result-message">
+                        You scored exceptionally well on the Translation Practice Quiz.
+                    </p>
+                </div>
+
+                <!-- Detail Hasil -->
+                <div class="grid grid-cols-3 gap-4 py-4 max-w-md mx-auto">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div class="text-2xl font-black text-indigo-600" id="stat-score">10/10</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Score</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div class="text-2xl font-black text-indigo-600" id="stat-accuracy">100%</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Accuracy</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div class="text-2xl font-black text-indigo-600" id="stat-grade">A+</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Grade</div>
+                    </div>
+                </div>
+
+                <!-- Tombol Tindakan Akhir -->
+                <div class="flex gap-4 max-w-md mx-auto">
+                    <button onclick="startQuiz()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-100 transition-all">
+                        Retake Quiz
+                    </button>
+                    <button onclick="switchTab('sandbox')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-4 rounded-2xl transition-all">
+                        Go to Sandbox
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-400 text-xs font-medium space-y-1">
+            <p>Designed with ❤️ for math educators and students everywhere.</p>
+            <p>&copy; 2026 Interactive Translation Learning Companion</p>
+        </div>
+    </footer>
+
+    <!-- LOGIKAL SISTEM JAVASCRIPT -->
+    <script>
+        // Variabel Navigasi Tab
+        let activeTab = 'learn';
+        
+        // Fungsi Perpindahan Tab Menu
+        function switchTab(tabId) {
+            activeTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
+                btn.classList.add('text-slate-600', 'hover:text-slate-900');
+            });
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if(activeBtn) {
+                activeBtn.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+                activeBtn.classList.remove('text-slate-600', 'hover:text-slate-900');
+            }
+
+            // Inisialisasi Canvas jika Tab Sandbox dibuka
+            if (tabId === 'sandbox') {
+                setTimeout(() => {
+                    initCanvas();
+                    updateTranslation();
+                }, 100);
+            }
+
+            // Memulai kuis secara langsung jika siswa menekan CTA Quiz
+            if (tabId === 'quiz') {
+                startQuiz();
+            }
+
+            // Memicu render persamaan MathJax ulang
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // ================= SISTEM CANVAS KARTESIAN INTERAKTIF =================
+        let canvas, ctx;
+        let currentShape = 'triangle'; // Titik awal shape
+        let translationA = 3;
+        let translationB = 2;
+
+        const shapes = {
+            point: [{x: -2, y: 1}],
+            segment: [{x: -3, y: -2}, {x: 1, y: 2}],
+            triangle: [{x: -4, y: -2}, {x: -1, y: -2}, {x: -3, y: 3}]
+        };
+
+        function initCanvas() {
+            canvas = document.getElementById('cartesianCanvas');
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        function resizeCanvas() {
+            if (!canvas) return;
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientWidth; // Memastikan 1:1 aspek rasio
+            drawCartesianPlane();
+        }
+
+        // Fungsi konversi matematika ke piksel canvas
+        function toCanvasX(mathX) {
+            const margin = 30;
+            const usableWidth = canvas.width - 2 * margin;
+            return margin + ((mathX + 10) / 20) * usableWidth;
+        }
+
+        function toCanvasY(mathY) {
+            const margin = 30;
+            const usableHeight = canvas.height - 2 * margin;
+            return margin + ((10 - mathY) / 20) * usableHeight;
+        }
+
+        function drawCartesianPlane() {
+            if (!canvas || !ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const gridColor = '#1e293b';
+            const axisColor = '#64748b';
+            const margin = 30;
+
+            // Menggambar kisi grid halus
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 0.5;
+            for (let i = -10; i <= 10; i++) {
+                if (i === 0) continue;
+                ctx.beginPath();
+                ctx.moveTo(toCanvasX(i), toCanvasY(-10));
+                ctx.lineTo(toCanvasX(i), toCanvasY(10));
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(toCanvasX(-10), toCanvasY(i));
+                ctx.lineTo(toCanvasX(10), toCanvasY(i));
+                ctx.stroke();
+            }
+
+            // Garis Utama Axis X dan Y
+            ctx.strokeStyle = axisColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(toCanvasX(-10), toCanvasY(0));
+            ctx.lineTo(toCanvasX(10), toCanvasY(0));
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(toCanvasX(0), toCanvasY(-10));
+            ctx.lineTo(toCanvasX(0), toCanvasY(10));
+            ctx.stroke();
+
+            // Label angka koordinat
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            for (let i = -10; i <= 10; i += 2) {
+                if (i === 0) continue;
+                ctx.fillText(i.toString(), toCanvasX(i), toCanvasY(0) + 5);
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(i.toString(), toCanvasX(0) - 5, toCanvasY(i));
+                ctx.textAlign = 'center';
+            }
+            
+            ctx.fillText("0", toCanvasX(0) - 8, toCanvasY(0) + 5);
+        }
+
+        function updateTranslation() {
+            translationA = parseInt(document.getElementById('slider-a').value);
+            translationB = parseInt(document.getElementById('slider-b').value);
+
+            document.getElementById('val-a').textContent = translationA >= 0 ? `+${translationA}` : translationA;
+            document.getElementById('val-b').textContent = translationB >= 0 ? `+${translationB}` : translationB;
+
+            drawCartesianPlane();
+            drawShapes();
+            updateCoordsTable();
+
+            if (window.MathJax) {
+                const container = document.querySelector('.font-mono.text-xl');
+                if (container) {
+                    container.innerHTML = `$$T = \\begin{pmatrix} \\color{red}{${translationA}} \\\\ \\color{blue}{${translationB}} \\end{pmatrix}$$`;
+                    MathJax.typesetPromise([container]);
+                }
+            }
+        }
+
+        function setSandboxShape(shapeType) {
+            currentShape = shapeType;
+            document.querySelectorAll('.shape-btn').forEach(btn => {
+                btn.classList.remove('border-indigo-600', 'bg-indigo-50/50', 'text-indigo-600');
+                btn.classList.add('border-slate-200', 'text-slate-500', 'hover:border-slate-300');
+            });
+            const activeBtn = document.getElementById(`btn-shape-${shapeType}`);
+            activeBtn.classList.add('border-indigo-600', 'bg-indigo-50/50', 'text-indigo-600');
+            activeBtn.classList.remove('border-slate-200', 'text-slate-500', 'hover:border-slate-300');
+
+            updateTranslation();
+        }
+
+        function resetSliders() {
+            document.getElementById('slider-a').value = 3;
+            document.getElementById('slider-b').value = 2;
+            updateTranslation();
+        }
+
+        function drawShapes() {
+            if (!ctx) return;
+            const pts = shapes[currentShape];
+            const preColor = '#2563eb';
+            const postColor = '#e11d48';
+            const vectorColor = '#fbbf24';
+
+            // Menggambar garis putus penunjuk pergeseran
+            pts.forEach(p => {
+                const px = toCanvasX(p.x);
+                const py = toCanvasY(p.y);
+                const tx = toCanvasX(p.x + translationA);
+                const ty = toCanvasY(p.y + translationB);
+
+                ctx.beginPath();
+                ctx.strokeStyle = vectorColor;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 4]);
+                ctx.moveTo(px, py);
+                ctx.lineTo(tx, ty);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                const angle = Math.atan2(ty - py, tx - px);
+                ctx.beginPath();
+                ctx.fillStyle = vectorColor;
+                ctx.moveTo(tx, ty);
+                ctx.lineTo(tx - 8 * Math.cos(angle - Math.PI / 6), ty - 8 * Math.sin(angle - Math.PI / 6));
+                ctx.lineTo(tx - 8 * Math.cos(angle + Math.PI / 6), ty - 8 * Math.sin(angle + Math.PI / 6));
+                ctx.closePath();
+                ctx.fill();
+            });
+
+            // Menggambar objek awal (Pre-image)
+            ctx.fillStyle = preColor + '33';
+            ctx.strokeStyle = preColor;
+            ctx.lineWidth = 3;
+
+            if (currentShape === 'point') {
+                ctx.beginPath();
+                ctx.arc(toCanvasX(pts[0].x), toCanvasY(pts[0].y), 6, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+            } else if (currentShape === 'segment') {
+                ctx.beginPath();
+                ctx.moveTo(toCanvasX(pts[0].x), toCanvasY(pts[0].y));
+                ctx.lineTo(toCanvasX(pts[1].x), toCanvasY(pts[1].y));
+                ctx.stroke();
+
+                pts.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(toCanvasX(p.x), toCanvasY(p.y), 4, 0, 2 * Math.PI);
+                    ctx.fillStyle = preColor;
+                    ctx.fill();
+                });
+            } else if (currentShape === 'triangle') {
+                ctx.beginPath();
+                ctx.moveTo(toCanvasX(pts[0].x), toCanvasY(pts[0].y));
+                ctx.lineTo(toCanvasX(pts[1].x), toCanvasY(pts[1].y));
+                ctx.lineTo(toCanvasX(pts[2].x), toCanvasY(pts[2].y));
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                pts.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(toCanvasX(p.x), toCanvasY(p.y), 4, 0, 2 * Math.PI);
+                    ctx.fillStyle = preColor;
+                    ctx.fill();
+                });
+            }
+
+            // Menggambar objek setelah digeser (Image)
+            ctx.fillStyle = postColor + '33';
+            ctx.strokeStyle = postColor;
+            ctx.lineWidth = 3;
+
+            if (currentShape === 'point') {
+                ctx.beginPath();
+                ctx.arc(toCanvasX(pts[0].x + translationA), toCanvasY(pts[0].y + translationB), 6, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+            } else if (currentShape === 'segment') {
+                ctx.beginPath();
+                ctx.moveTo(toCanvasX(pts[0].x + translationA), toCanvasY(pts[0].y + translationB));
+                ctx.lineTo(toCanvasX(pts[1].x + translationA), toCanvasY(pts[1].y + translationB));
+                ctx.stroke();
+
+                pts.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(toCanvasX(p.x + translationA), toCanvasY(p.y + translationB), 4, 0, 2 * Math.PI);
+                    ctx.fillStyle = postColor;
+                    ctx.fill();
+                });
+            } else if (currentShape === 'triangle') {
+                ctx.beginPath();
+                ctx.moveTo(toCanvasX(pts[0].x + translationA), toCanvasY(pts[0].y + translationB));
+                ctx.lineTo(toCanvasX(pts[1].x + translationA), toCanvasY(pts[1].y + translationB));
+                ctx.lineTo(toCanvasX(pts[2].x + translationA), toCanvasY(pts[2].y + translationB));
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                pts.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(toCanvasX(p.x + translationA), toCanvasY(p.y + translationB), 4, 0, 2 * Math.PI);
+                    ctx.fillStyle = postColor;
+                    ctx.fill();
+                });
+            }
+
+            // Label keterangan huruf pada titik koordinat
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 11px Plus Jakarta Sans, sans-serif';
+            const labels = currentShape === 'point' ? ['A'] : (currentShape === 'segment' ? ['A', 'B'] : ['A', 'B', 'C']);
+            
+            pts.forEach((p, idx) => {
+                ctx.fillStyle = '#60a5fa';
+                ctx.fillText(`${labels[idx]}(${p.x},${p.y})`, toCanvasX(p.x), toCanvasY(p.y) - 10);
+
+                ctx.fillStyle = '#f43f5e';
+                ctx.fillText(`${labels[idx]}'(${p.x + translationA},${p.y + translationB})`, toCanvasX(p.x + translationA), toCanvasY(p.y + translationB) - 10);
+            });
+        }
+
+        function updateCoordsTable() {
+            const pts = shapes[currentShape];
+            const labels = currentShape === 'point' ? ['A'] : (currentShape === 'segment' ? ['A', 'B'] : ['A', 'B', 'C']);
+            const container = document.getElementById('sandbox-coords-output');
+            container.innerHTML = '';
+
+            pts.forEach((p, idx) => {
+                const mapHtml = `
+                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <span class="text-blue-600 font-bold">${labels[idx]}(${p.x}, ${p.y})</span>
+                        <span class="text-slate-400 font-bold text-xs">➔</span>
+                        <span class="text-rose-600 font-bold">${labels[idx]}'(${p.x} ${translationA >= 0 ? '+' : ''}${translationA}, ${p.y} ${translationB >= 0 ? '+' : ''}${translationB}) = ${labels[idx]}'(${p.x + translationA}, ${p.y + translationB})</span>
+                    </div>
+                `;
+                container.innerHTML += mapHtml;
+            });
+        }
+
+
+        // ================= SISTEM KUIS MASTERI 10 NOMOR INTERAKTIF =================
+        const quizQuestions = [
+            {
+                question: "Translate the point $A(2, 3)$ under the vector $T = \\begin{pmatrix} 3 \\\\ -1 \\end{pmatrix}$. What are the coordinates of the image point $A'$?",
+                options: ["$A'(5, 4)$", "$A'(5, 2)$", "$A'(-1, 4)$", "$A'(6, -3)$"],
+                correct: 1,
+                explanation: "Using the formula $x' = x + a$ and $y' = y + b$. Here, $x' = 2 + 3 = 5$, and $y' = 3 + (-1) = 2$. Therefore, the image is $A'(5, 2)$."
+            },
+            {
+                question: "A point $P'(3, -2)$ is the translated image of $P(x, y)$ under the transformation $T = \\begin{pmatrix} 4 \\\\ 2 \\end{pmatrix}$. Find the original coordinate of point $P$.",
+                options: ["$P(7, 0)$", "$P(-1, -4)$", "$P(-1, 0)$", "$P(1, -4)$"],
+                correct: 1,
+                explanation: "To find the pre-image, subtract vector components from the image point: $x = x' - a = 3 - 4 = -1$ and $y = y' - b = -2 - 2 = -4$. Thus, $P(-1, -4)$."
+            },
+            {
+                question: "Find the translation vector $T$ that shifts the point $B(5, -2)$ directly onto the image point $B'(1, 4)$.",
+                options: ["$\\begin{pmatrix} -4 \\\\ 6 \\end{pmatrix}$", "$\\begin{pmatrix} 4 \\\\ -6 \\end{pmatrix}$", "$\\begin{pmatrix} -4 \\\\ 2 \\end{pmatrix}$", "$\\begin{pmatrix} 6 \\\\ 2 \\end{pmatrix}$"],
+                correct: 0,
+                explanation: "The translation vector parameters are $a = x' - x = 1 - 5 = -4$, and $b = y' - y = 4 - (-2) = 6$. So, the vector is $\\begin{pmatrix} -4 \\\\ 6 \\end{pmatrix}$."
+            },
+            {
+                question: "Triangle $XYZ$ has vertex coordinates $X(1,1)$, $Y(3,1)$, and $Z(2,3)$. If the triangle is translated by vector $T = \\begin{pmatrix} -2 \\\\ 4 \\end{pmatrix}$, what are the coordinates of the translated vertex $Y'$?",
+                options: ["$Y'(1, 5)$", "$Y'(-1, 5)$", "$Y'(5, -3)$", "$Y'(1, -3)$"],
+                correct: 0,
+                explanation: "Simply apply the translation vector to vertex $Y(3,1)$: $x' = 3 + (-2) = 1$ and $y' = 1 + 4 = 5$. The image is $Y'(1, 5)$."
+            },
+            {
+                question: "Which of the following geometric properties is NOT preserved (does NOT remain constant) during a standard geometric translation?",
+                options: ["The sizes of the interior angles of the shape", "The overall size/area of the shape", "The coordinates of the vertices of the shape", "The direction of parallel boundary line segments"],
+                correct: 2,
+                explanation: "Translations are isometric transformations, meaning size, shape, and angles are preserved. However, the coordinates of the vertices definitely shift as the entire figure moves to a new location."
+            },
+            {
+                question: "Point $M(2, -4)$ is translated by vector $T_1 = \\begin{pmatrix} 3 \\\\ 1 \\end{pmatrix}$ followed by another translation $T_2 = \\begin{pmatrix} -1 \\\\ 5 \\end{pmatrix}$. Find the final image coordinate $M''$.",
+                options: ["$M''(4, 2)$", "$M''(5, -3)$", "$M''(2, 2)$", "$M''(4, 0)$"],
+                correct: 0,
+                explanation: "Successive translations can be combined by adding their vectors: $T_{net} = T_1 + T_2 = \\begin{pmatrix} 3 + (-1) \\\\ 1 + 5 \\end{pmatrix} = \\begin{pmatrix} 2 \\\\ 6 \\end{pmatrix}$. Translating $M(2, -4)$ by $\\begin{pmatrix} 2 \\\\ 6 \\end{pmatrix}$ yields $(2+2, -4+6) = M''(4, 2)$."
+            },
+            {
+                question: "The translation vector is defined by $T = \\begin{pmatrix} -5 \\\\ 3 \\end{pmatrix}$. If the image of a translated point is located exactly at the origin $(0, 0)$, what was the original point?",
+                options: ["$(5, -3)$", "$(-5, 3)$", "$(5, 3)$", "$(-5, -3)$"],
+                correct: 0,
+                explanation: "To undo translation and get back to the pre-image, solve $x + (-5) = 0 \\implies x = 5$ and $y + 3 = 0 \\implies y = -3$. The pre-image coordinate is $(5, -3)$."
+            },
+            {
+                question: "The equation of a line is $y = 2x + 1$. If this entire line is shifted vertically upwards by $3$ units using vector $T = \\begin{pmatrix} 0 \\\\ 3 \\end{pmatrix}$, what is the equation of the translated line?",
+                options: ["$y = 2x + 4$", "$y = 2x - 2$", "$y = 5x + 1$", "$y = 2x + 3$"],
+                correct: 0,
+                explanation: "Substitute coordinate properties: $y' = y + 3 \\implies y = y' - 3$. Substituting $y$ into the equation gives $y' - 3 = 2x + 1 \\implies y' = 2x + 4$. (Or simply add 3 directly to the y-intercept: $1 + 3 = 4$)."
+            },
+            {
+                question: "The center of a circle $(x - 1)^2 + (y + 3)^2 = 16$ is translated by vector $T = \\begin{pmatrix} 4 \\\\ -2 \\end{pmatrix}$. What is the coordinate of the translated circle's center?",
+                options: ["$(5, -5)$", "$(5, -1)$", "$(-3, -1)$", "$(3, -5)$"],
+                correct: 0,
+                explanation: "The original circle center is $(1, -3)$. Translating this coordinate point by vector $\\begin{pmatrix} 4 \\\\ -2 \\end{pmatrix}$ gives: $(1+4, -3+(-2)) = (5, -5)$."
+            },
+            {
+                question: "Point $K(a, 2b)$ is translated by vector $T = \\begin{pmatrix} b \\\\ -a \\end{pmatrix}$ to yield the image $K'(5, 1)$. Find the values of $a$ and $b$ and calculate $a + b$.",
+                options: ["$3$", "$4$", "$5$", "$6$"],
+                correct: 2,
+                explanation: "Form the system equations: (1) $a + b = 5$ and (2) $2b - a = 1$. Add the equations together: $(a+b) + (2b-a) = 5+1 \\implies 3b = 6 \\implies b = 2$. Substituting back: $a + 2 = 5 \\implies a = 3$. Therefore, $a+b = 3+2 = 5$."
+            }
+        ];
+
+        let currentQuestionIdx = 0;
+        let userScore = 0;
+        let selectedOptionIdx = null;
+
+        function startQuiz() {
+            currentQuestionIdx = 0;
+            userScore = 0;
+            selectedOptionIdx = null;
+
+            document.getElementById('quiz-intro-card').classList.add('hidden');
+            document.getElementById('quiz-result-card').classList.add('hidden');
+            document.getElementById('quiz-play-container').classList.remove('hidden');
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            selectedOptionIdx = null;
+            document.getElementById('quiz-next-btn').disabled = true;
+            document.getElementById('quiz-next-btn').classList.remove('bg-indigo-600', 'text-white', 'hover:bg-indigo-700', 'cursor-pointer');
+            document.getElementById('quiz-next-btn').classList.add('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+
+            const fb = document.getElementById('quiz-feedback');
+            fb.classList.add('hidden');
+
+            const q = quizQuestions[currentQuestionIdx];
+
+            // Update UI Progress Kuis
+            document.getElementById('quiz-question-indicator').textContent = `Question ${currentQuestionIdx + 1} of ${quizQuestions.length}`;
+            document.getElementById('quiz-score-indicator').textContent = `Score: ${userScore}/${quizQuestions.length}`;
+            const percentage = ((currentQuestionIdx + 1) / quizQuestions.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${percentage}%`;
+
+            // Atur Teks Pertanyaan
+            document.getElementById('quiz-question-text').innerHTML = q.question;
+
+            // Membuat Tombol Opsi Jawaban
+            const grid = document.getElementById('quiz-options-grid');
+            grid.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "opt-btn w-full p-4 text-left border border-slate-200 rounded-2xl hover:border-indigo-300 hover:bg-slate-50 transition-all font-medium text-sm text-slate-700 flex justify-between items-center";
+                btn.innerHTML = `<span>${opt}</span>`;
+                btn.onclick = () => selectOption(idx);
+                grid.appendChild(btn);
+            });
+
+            // Re-render LaTeX pada kuis
+            if (window.MathJax) {
+                MathJax.typesetPromise([document.getElementById('quiz-question-text'), grid, fb]);
+            }
+        }
+
+        function selectOption(optionIdx) {
+            if (selectedOptionIdx !== null) return; // Mencegah klik ganda
+            selectedOptionIdx = optionIdx;
+
+            const q = quizQuestions[currentQuestionIdx];
+            const optionButtons = document.querySelectorAll('.opt-btn');
+
+            const isCorrect = optionIdx === q.correct;
+            if (isCorrect) {
+                userScore++;
+                document.getElementById('quiz-score-indicator').textContent = `Score: ${userScore}/${quizQuestions.length}`;
+            }
+
+            // Atur warna visual berdasarkan kebenaran jawaban
+            optionButtons.forEach((btn, idx) => {
+                btn.classList.remove('hover:border-indigo-300', 'hover:bg-slate-50');
+                if (idx === q.correct) {
+                    btn.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-800');
+                    btn.innerHTML += `<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>`;
+                } else if (idx === optionIdx) {
+                    btn.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-800');
+                    btn.innerHTML += `<i data-lucide="alert-circle" class="w-5 h-5 text-rose-600"></i>`;
+                } else {
+                    btn.classList.add('opacity-60');
+                }
+            });
+
+            // Tampilkan pembahasan pembasmi kebingungan
+            const fb = document.getElementById('quiz-feedback');
+            const fbIcon = document.getElementById('quiz-feedback-icon');
+            const fbTitle = document.getElementById('quiz-feedback-title');
+            const fbBody = document.getElementById('quiz-feedback-body');
+
+            fb.classList.remove('hidden');
+            fbBody.innerHTML = q.explanation;
+
+            if (isCorrect) {
+                fb.className = "p-5 rounded-2xl border flex items-start space-x-3 transition-all duration-300 border-emerald-200 bg-emerald-50/50 text-emerald-800";
+                fbIcon.className = "p-1 rounded-full mt-0.5 bg-emerald-100 text-emerald-700";
+                fbIcon.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i>`;
+                fbTitle.textContent = "Correct!";
+            } else {
+                fb.className = "p-5 rounded-2xl border flex items-start space-x-3 transition-all duration-300 border-rose-200 bg-rose-50/50 text-rose-800";
+                fbIcon.className = "p-1 rounded-full mt-0.5 bg-rose-100 text-rose-700";
+                fbIcon.innerHTML = `<i data-lucide="x" class="w-4 h-4"></i>`;
+                fbTitle.textContent = "Incorrect";
+            }
+
+            // Aktifkan tombol Next
+            const nextBtn = document.getElementById('quiz-next-btn');
+            nextBtn.disabled = false;
+            nextBtn.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+            nextBtn.classList.add('bg-indigo-600', 'text-white', 'hover:bg-indigo-700', 'cursor-pointer');
+
+            lucide.createIcons();
+            if (window.MathJax) {
+                MathJax.typesetPromise([fbBody]);
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIdx++;
+            if (currentQuestionIdx < quizQuestions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-play-container').classList.add('hidden');
+            const resultsCard = document.getElementById('quiz-result-card');
+            resultsCard.classList.remove('hidden');
+
+            const scorePercent = Math.round((userScore / quizQuestions.length) * 100);
+            
+            let title = "Outstanding Job!";
+            let message = "You scored exceptionally well. You've truly mastered geometric translations!";
+            let trophy = "🏆";
+            let trophyBg = "bg-amber-100 text-amber-600";
+            let grade = "A+";
+
+            if (scorePercent === 100) {
+                title = "Perfect Score!";
+                message = "Incredible! You didn't make a single mistake. Excellent work!";
+                trophy = "👑";
+                trophyBg = "bg-violet-100 text-violet-600";
+                grade = "A+";
+            } else if (scorePercent >= 80) {
+                title = "Excellent Performance!";
+                message = "Great job! You have a very solid understanding of translated geometries.";
+                trophy = "⭐";
+                trophyBg = "bg-amber-100 text-amber-600";
+                grade = "A";
+            } else if (scorePercent >= 60) {
+                title = "Good Try!";
+                message = "Well done. You passed, but consider brushing up on a few properties and retrying.";
+                trophy = "👍";
+                trophyBg = "bg-blue-100 text-blue-600";
+                grade = "B";
+            } else {
+                title = "Keep Practicing!";
+                message = "Translation can be tricky. Try reviewing the Interactive Sandbox and study modules again!";
+                trophy = "📖";
+                trophyBg = "bg-slate-100 text-slate-600";
+                grade = "C";
+            }
+
+            document.getElementById('result-title').textContent = title;
+            document.getElementById('result-message').textContent = message;
+            
+            const trophyCont = document.getElementById('trophy-container');
+            trophyCont.className = `w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-inner text-4xl ${trophyBg}`;
+            trophyCont.innerHTML = trophy;
+
+            document.getElementById('stat-score').textContent = `${userScore}/${quizQuestions.length}`;
+            document.getElementById('stat-accuracy').textContent = `${scorePercent}%`;
+            document.getElementById('stat-grade').textContent = grade;
+        }
+
+        // Inisialisasi awal sistem
+        window.onload = function() {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
