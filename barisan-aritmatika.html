@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathCard - Barisan Aritmetika Interaktif</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#1e1b4b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        .math-glow {
+            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.3);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-full font-sans antialiased selection:bg-indigo-500 selection:text-white pb-12 flex flex-col justify-between">
+
+    <header class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-4 py-3 sm:px-8">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid font-bold text-white text-xl">∑</i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-violet-300">
+                        MathCard Aritmetika
+                    </h1>
+                    <p class="text-xs text-slate-400">Mastering Barisan Aritmetika Dasar</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                <button id="btnFormula" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-indigo-300 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                    <span>Rumus</span>
+                </button>
+                
+                <div class="flex bg-slate-800/90 p-1 rounded-xl border border-slate-700 text-xs">
+                    <button id="modeStudy" class="px-3 py-1.5 rounded-lg font-medium text-white bg-indigo-600 transition shadow">
+                        <i class="fa-solid fa-brain mr-1"></i> Belajar
+                    </button>
+                    <button id="modeQuiz" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">
+                        <i class="fa-solid fa-gamepad mr-1"></i> Kuis Interaktif
+                    </button>
+                </div>
+
+                <button id="btnSound" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-indigo-400 flex items-center justify-center transition" title="Efek Suara">
+                    <i class="fa-solid fa-volume-high text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 mt-6 flex-grow flex flex-col justify-center w-full">
+        <!-- Progress & Stats Header -->
+        <div class="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 backdrop-blur">
+                <span class="text-xs text-slate-400 block mb-1">Kartu Selesai</span>
+                <span id="statProgress" class="text-lg font-bold text-indigo-400">1 / 15</span>
+            </div>
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 backdrop-blur">
+                <span class="text-xs text-slate-400 block mb-1">Tingkat Paham</span>
+                <span id="statMastery" class="text-lg font-bold text-emerald-400">0%</span>
+            </div>
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 backdrop-blur">
+                <span class="text-xs text-slate-400 block mb-1">Streak Kuis</span>
+                <span id="statStreak" class="text-lg font-bold text-amber-400">🔥 0</span>
+            </div>
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 backdrop-blur">
+                <span class="text-xs text-slate-400 block mb-1">Kategori</span>
+                <span id="statCategory" class="text-xs font-semibold text-violet-300 truncate block mt-1">Suku ke-n</span>
+            </div>
+        </div>
+
+        <!-- Progress Bar Indicator -->
+        <div class="w-full bg-slate-800 h-2 rounded-full mb-6 overflow-hidden border border-slate-700/50">
+            <div id="progressBar" class="bg-gradient-to-r from-indigo-500 to-violet-500 h-full w-0 transition-all duration-300 rounded-full"></div>
+        </div>
+
+        <!-- Flashcard Wrapper -->
+        <div class="perspective-1000 w-full max-w-2xl mx-auto h-[400px] sm:h-[420px] cursor-pointer group" id="cardContainer">
+            <div id="flashcard" class="relative w-full h-full transform-style-3d rounded-2xl shadow-2xl transition-all duration-500">
+                
+                <!-- FRONT OF CARD -->
+                <div class="absolute inset-0 w-full h-full backface-hidden rounded-2xl bg-gradient-to-b from-slate-800 to-slate-800/95 border-2 border-slate-700/80 p-6 sm:p-8 flex flex-col justify-between math-glow hover:border-indigo-500/50 transition-colors">
+                    <!-- Card Header -->
+                    <div class="flex items-center justify-between">
+                        <span id="cardBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                            Soal #1
+                        </span>
+                        <span class="text-xs text-slate-400 flex items-center gap-1">
+                            <i class="fa-solid fa-rotate text-indigo-400"></i> Klik untuk balik
+                        </span>
+                    </div>
+
+                    <!-- Question Content -->
+                    <div class="my-auto text-center space-y-4">
+                        <h2 id="cardQuestion" class="text-lg sm:text-xl font-medium text-slate-200 leading-relaxed">
+                            Diketahui barisan 3, 7, 11, 15, ... Beda (b) dari barisan tersebut adalah?
+                        </h2>
+                        
+                        <!-- Mathematical Formula / Visual Hint Container -->
+                        <div id="cardSequenceDisplay" class="inline-flex items-center justify-center gap-2 sm:gap-3 bg-slate-900/80 px-4 py-3 rounded-xl border border-slate-700/80 my-2">
+                            <span class="font-mono text-indigo-300 font-bold text-lg sm:text-xl">3, 7, 11, 15, ...</span>
+                        </div>
+
+                        <!-- Quiz Input Field (Shown in Quiz Mode) -->
+                        <div id="quizInputWrapper" class="hidden mt-4 pt-2">
+                            <form id="quizForm" onsubmit="event.preventDefault(); checkQuizAnswer();" class="flex gap-2 max-w-xs mx-auto">
+                                <input type="number" id="quizInput" placeholder="Masukkan Jawaban..." class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-center font-bold focus:outline-none focus:border-indigo-500 transition">
+                                <button type="submit" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition flex items-center justify-center">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer Hint -->
+                    <div class="flex items-center justify-between text-xs text-slate-400 border-t border-slate-700/60 pt-3">
+                        <span id="hintBtn" class="hover:text-amber-300 transition flex items-center gap-1">
+                            <i class="fa-regular fa-lightbulb text-amber-400"></i> Petunjuk
+                        </span>
+                        <span id="cardDifficulty" class="text-slate-500 font-semibold">Tingkat: Mudah</span>
+                    </div>
+                </div>
+
+                <!-- BACK OF CARD -->
+                <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-2xl bg-gradient-to-b from-indigo-950/90 to-slate-900 border-2 border-indigo-500/50 p-6 sm:p-8 flex flex-col justify-between math-glow overflow-y-auto">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            Pembahasan & Jawaban
+                        </span>
+                        <span class="text-xs text-slate-400">
+                            <i class="fa-solid fa-circle-check text-emerald-400"></i> Solusi Detail
+                        </span>
+                    </div>
+
+                    <!-- Answer & Explanation -->
+                    <div class="my-auto space-y-3 py-2">
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-indigo-500/30 text-center">
+                            <span class="text-xs text-slate-400 block mb-1">Jawaban Akhir</span>
+                            <span id="cardAnswer" class="text-2xl sm:text-3xl font-extrabold text-emerald-400">
+                                b = 4
+                            </span>
+                        </div>
+
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-sm space-y-2 text-slate-300">
+                            <p class="font-semibold text-indigo-300 border-b border-slate-800 pb-1">Langkah-langkah:</p>
+                            <div id="cardSteps" class="space-y-1 font-mono text-xs sm:text-sm">
+                                <p>• Suku pertama (a) = 3</p>
+                                <p>• Beda (b) = U₂ - U₁</p>
+                                <p>• b = 7 - 3 = 4</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Evaluation Actions (Study Mode) -->
+                    <div id="studyActions" class="grid grid-cols-2 gap-3 border-t border-slate-800 pt-3">
+                        <button id="btnReview" class="py-2.5 rounded-xl bg-slate-800 hover:bg-rose-950/50 border border-rose-500/30 text-rose-300 font-semibold text-xs sm:text-sm transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-xmark"></i> Perlu Belajar
+                        </button>
+                        <button id="btnMastered" class="py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30">
+                            <i class="fa-solid fa-check"></i> Sudah Paham!
+                        </button>
+                    </div>
+
+                    <!-- Quiz Mode Action -->
+                    <div id="quizActions" class="hidden border-t border-slate-800 pt-3 text-center">
+                        <button id="btnNextQuiz" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm transition shadow-lg">
+                            Soal Berikutnya <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Controls Bar -->
+        <div class="mt-8 flex items-center justify-between max-w-2xl mx-auto w-full gap-2 sm:gap-4">
+            <button id="btnPrev" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold text-sm transition flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                <i class="fa-solid fa-chevron-left"></i>
+                <span class="hidden sm:inline">Sebelumnya</span>
+            </button>
+
+            <div class="flex items-center gap-2">
+                <button id="btnFlip" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-indigo-300 font-semibold text-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Balik Kartu</span>
+                </button>
+                <button id="btnShuffle" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 font-semibold text-sm transition" title="Acak Soal">
+                    <i class="fa-solid fa-shuffle"></i>
+                </button>
+            </div>
+
+            <button id="btnNext" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                <span class="hidden sm:inline">Berikutnya</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- Extra Feature: Infinite Practice Generator Toggle -->
+        <div class="mt-6 text-center">
+            <button id="btnGenerateRandom" class="inline-flex items-center gap-2 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition bg-indigo-950/40 border border-indigo-800/50 px-4 py-2 rounded-full">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Generator Soal Acak Tak Terbatas
+            </button>
+        </div>
+    </main>
+
+    <!-- Formula Modal -->
+    <div id="formulaModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
+            <button id="btnCloseFormula" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-indigo-300">
+                    <i class="fa-solid fa-square-root-variable"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Ringkasan Rumus Barisan Aritmetika</h3>
+            </div>
+
+            <div class="space-y-4 text-sm text-slate-300">
+                <!-- Formula 1: Suku ke-n -->
+                <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700">
+                    <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider block mb-1">1. Suku ke-n (U<sub>n</sub>)</span>
+                    <div class="bg-slate-900 p-2 rounded text-center font-mono text-emerald-400 font-bold text-base my-2">
+                        U<sub>n</sub> = a + (n - 1)b
+                    </div>
+                    <p class="text-xs text-slate-400">
+                        <b>a</b> = suku pertama (U₁)<br>
+                        <b>b</b> = beda / selisih (U<sub>n</sub> - U<sub>n-1</sub>)<br>
+                        <b>n</b> = urutan suku yang dicari
+                    </p>
+                </div>
+
+                <!-- Formula 2: Beda -->
+                <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700">
+                    <span class="text-xs font-bold text-violet-400 uppercase tracking-wider block mb-1">2. Beda (b)</span>
+                    <div class="bg-slate-900 p-2 rounded text-center font-mono text-violet-300 font-bold text-base my-2">
+                        b = U<sub>2</sub> - U<sub>1</sub> &nbsp;atau&nbsp; b = (U<sub>k</sub> - U<sub>m</sub>) / (k - m)
+                    </div>
+                    <p class="text-xs text-slate-400">Selisih konstan antara dua suku yang berurutan.</p>
+                </div>
+
+                <!-- Formula 3: Banyak Suku & Suku Tengah -->
+                <div class="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700">
+                    <span class="text-xs font-bold text-amber-400 uppercase tracking-wider block mb-1">3. Banyak Suku (n) & Suku Tengah (U<sub>t</sub>)</span>
+                    <div class="bg-slate-900 p-2 rounded text-center font-mono text-amber-300 font-bold text-base my-2">
+                        n = <sup>(U<sub>n</sub> - a)</sup>/<sub>b</sub> + 1 &nbsp;|&nbsp; U<sub>t</sub> = <sup>(a + U<sub>n</sub>)</sup>/<sub>2</sub>
+                    </div>
+                    <p class="text-xs text-slate-400">Menentukan jumlah seluruh suku pada barisan terbatas dan nilai suku tengahnya.</p>
+                </div>
+            </div>
+
+            <button id="btnCloseFormulaBottom" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition">
+                Tutup & Lanjut Belajar
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-800 border border-slate-700 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+            <span id="toastIcon" class="text-xl">✅</span>
+            <span id="toastMessage" class="text-sm font-semibold">Pesan Toast</span>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA SOAL BARISAN ARITMETIKA (15 SOAL: 10 MUDAH, 3 SEDANG, 2 SULIT) ---
+        const questionBank = [
+            // === 10 SOAL MUDAH ===
+            {
+                category: "Beda (b)",
+                difficulty: "Mudah",
+                question: "Diketahui barisan 3, 7, 11, 15, ... Beda (b) dari barisan tersebut adalah?",
+                sequence: "3, 7, 11, 15, ...",
+                answerValue: 4,
+                answerText: "b = 4",
+                hint: "Beda didapat dari pengurangan suku kedua dikurangi suku pertama (U₂ - U₁).",
+                steps: [
+                    "Suku pertama (a) = 3",
+                    "Suku kedua (U₂) = 7",
+                    "b = U₂ - U₁",
+                    "b = 7 - 3 = 4"
+                ]
+            },
+            {
+                category: "Beda (b)",
+                difficulty: "Mudah",
+                question: "Tentukan beda (b) dari barisan aritmetika 20, 15, 10, 5, ...",
+                sequence: "20, 15, 10, 5, ...",
+                answerValue: -5,
+                answerText: "b = -5",
+                hint: "Gunakan b = U₂ - U₁. Karena angka semakin mengecil, beda akan bernilai negatif.",
+                steps: [
+                    "U₁ = 20, U₂ = 15",
+                    "b = U₂ - U₁",
+                    "b = 15 - 20 = -5"
+                ]
+            },
+            {
+                category: "Suku Pertama (a)",
+                difficulty: "Mudah",
+                question: "Diketahui barisan aritmetika 12, 17, 22, 27, ... Berapakah suku pertamanya (a)?",
+                sequence: "12, 17, 22, 27, ...",
+                answerValue: 12,
+                answerText: "a = 12",
+                hint: "Suku pertama (a) adalah angka paling awal pada barisan.",
+                steps: [
+                    "Urutan angka pertama pada barisan adalah 12",
+                    "Maka suku pertama a = U₁ = 12"
+                ]
+            },
+            {
+                category: "Suku ke-n (Un)",
+                difficulty: "Mudah",
+                question: "Diketahui barisan 2, 5, 8, 11, ... Berapakah suku ke-15 (U₁₅)?",
+                sequence: "2, 5, 8, 11, ...",
+                answerValue: 44,
+                answerText: "U₁₅ = 44",
+                hint: "a = 2, b = 3. Gunakan rumus Uₙ = a + (n - 1)b.",
+                steps: [
+                    "a = 2, b = 3, n = 15",
+                    "U₁₅ = 2 + (15 - 1) × 3",
+                    "U₁₅ = 2 + (14 × 3)",
+                    "U₁₅ = 2 + 42 = 44"
+                ]
+            },
+            {
+                category: "Suku ke-n (Un)",
+                difficulty: "Mudah",
+                question: "Diketahui barisan aritmetika 10, 14, 18, 22, ... Tentukan suku ke-18 (U₁₈)!",
+                sequence: "10, 14, 18, 22, ...",
+                answerValue: 78,
+                answerText: "U₁₈ = 78",
+                hint: "a = 10, b = 4. Hitung U₁₈ = a + 17b.",
+                steps: [
+                    "a = 10, b = 4, n = 18",
+                    "U₁₈ = 10 + (18 - 1) × 4",
+                    "U₁₈ = 10 + (17 × 4)",
+                    "U₁₈ = 10 + 68 = 78"
+                ]
+            },
+            {
+                category: "Suku ke-n (Un)",
+                difficulty: "Mudah",
+                question: "Diketahui barisan 1, 4, 7, 10, ... Nilai dari suku ke-25 (U₂₅) adalah?",
+                sequence: "1, 4, 7, 10, ...",
+                answerValue: 73,
+                answerText: "U₂₅ = 73",
+                hint: "a = 1, b = 3. Hitung U₂₅ = 1 + 24(3).",
+                steps: [
+                    "a = 1, b = 3, n = 25",
+                    "U₂₅ = 1 + (25 - 1) × 3",
+                    "U₂₅ = 1 + (24 × 3)",
+                    "U₂₅ = 1 + 72 = 73"
+                ]
+            },
+            {
+                category: "Suku ke-n (Un)",
+                difficulty: "Mudah",
+                question: "Diketahui barisan 50, 45, 40, 35, ... Berapakah suku ke-12 (U₁₂)?",
+                sequence: "50, 45, 40, 35, ...",
+                answerValue: -5,
+                answerText: "U₁₂ = -5",
+                hint: "Suku berkurang 5 setiap langkah (b = -5). Hitung U₁₂ = 50 + 11(-5).",
+                steps: [
+                    "a = 50, b = -5, n = 12",
+                    "U₁₂ = 50 + (12 - 1) × (-5)",
+                    "U₁₂ = 50 + (11 × -5)",
+                    "U₁₂ = 50 - 55 = -5"
+                ]
+            },
+            {
+                category: "Beda (b)",
+                difficulty: "Mudah",
+                question: "Berapakah beda (b) dari barisan 4, 10, 16, 22, ...?",
+                sequence: "4, 10, 16, 22, ...",
+                answerValue: 6,
+                answerText: "b = 6",
+                hint: "Kurangkan suku kedua dengan suku pertama.",
+                steps: [
+                    "a = 4, U₂ = 10",
+                    "b = U₂ - U₁",
+                    "b = 10 - 4 = 6"
+                ]
+            },
+            {
+                category: "Suku ke-n (Un)",
+                difficulty: "Mudah",
+                question: "Diketahui barisan 5, 9, 13, 17, ... Nilai suku ke-20 (U₂₀) adalah?",
+                sequence: "5, 9, 13, 17, ...",
+                answerValue: 81,
+                answerText: "U₂₀ = 81",
+                hint: "a = 5, b = 4. Hitung U₂₀ = 5 + 19(4).",
+                steps: [
+                    "a = 5, b = 4, n = 20",
+                    "U₂₀ = 5 + (20 - 1) × 4",
+                    "U₂₀ = 5 + (19 × 4)",
+                    "U₂₀ = 5 + 76 = 81"
+                ]
+            },
+            {
+                category: "Suku Pertama (a)",
+                difficulty: "Mudah",
+                question: "Jika suatu barisan aritmetika memiliki beda b = 3 dan suku kedua U₂ = 8, berapakah suku pertama (a)?",
+                sequence: "b = 3, U₂ = 8",
+                answerValue: 5,
+                answerText: "a = 5",
+                hint: "U₂ = a + b. Maka a = U₂ - b.",
+                steps: [
+                    "U₂ = a + b",
+                    "8 = a + 3",
+                    "a = 8 - 3 = 5"
+                ]
+            },
+
+            // === 3 SOAL SEDANG ===
+            {
+                category: "Suku ke-n (Un)",
+                difficulty: "Sedang",
+                question: "Diketahui suku pertama a = 15 dan beda b = -4. Nilai dari suku ke-7 (U₇) adalah?",
+                sequence: "a = 15, b = -4",
+                answerValue: -9,
+                answerText: "U₇ = -9",
+                hint: "Karena beda bernilai negatif, barisan akan berkurang nilainya hingga negatif.",
+                steps: [
+                    "a = 15, b = -4, n = 7",
+                    "U₇ = a + (7 - 1)b",
+                    "U₇ = 15 + (6 × -4)",
+                    "U₇ = 15 - 24 = -9"
+                ]
+            },
+            {
+                category: "Mencari Beda",
+                difficulty: "Sedang",
+                question: "Suatu barisan aritmetika memiliki U₃ = 11 dan U₇ = 23. Berapakah beda (b) barisan tersebut?",
+                sequence: "U₃ = 11, U₇ = 23",
+                answerValue: 3,
+                answerText: "b = 3",
+                hint: "Gunakan b = (U₇ - U₃) / (7 - 3).",
+                steps: [
+                    "U₇ - U₃ = (7 - 3)b",
+                    "23 - 11 = 4b",
+                    "12 = 4b",
+                    "b = 12 / 4 = 3"
+                ]
+            },
+            {
+                category: "Suku Pertama (a)",
+                difficulty: "Sedang",
+                question: "Diketahui suku ke-5 (U₅) = 22 dan beda b = 4. Berapakah suku pertama (a)?",
+                sequence: "U₅ = 22, b = 4",
+                answerValue: 6,
+                answerText: "a = 6",
+                hint: "U₅ = a + 4b. Subtitusi nilai U₅ dan b untuk mencari a.",
+                steps: [
+                    "U₅ = a + 4b",
+                    "22 = a + (4 × 4)",
+                    "22 = a + 16",
+                    "a = 22 - 16 = 6"
+                ]
+            },
+
+            // === 2 SOAL SULIT ===
+            {
+                category: "Banyak Suku (n)",
+                difficulty: "Sulit",
+                question: "Berapakah banyaknya suku (n) pada barisan aritmetika 7, 11, 15, ..., 43?",
+                sequence: "7, 11, 15, ..., 43",
+                answerValue: 10,
+                answerText: "n = 10 suku",
+                hint: "Suku terakhir Uₙ = 43. Gunakan 43 = a + (n - 1)b untuk mencari n.",
+                steps: [
+                    "a = 7, b = 4, Uₙ = 43",
+                    "43 = 7 + (n - 1)4",
+                    "36 = (n - 1)4",
+                    "n - 1 = 9  ⇒  n = 10"
+                ]
+            },
+            {
+                category: "Suku ke-n Lanjutan",
+                difficulty: "Sulit",
+                question: "Diketahui U₄ = 17 dan U₉ = 37 pada suatu barisan aritmetika. Tentukan nilai dari suku ke-15 (U₁₅)!",
+                sequence: "U₄ = 17, U₉ = 37",
+                answerValue: 61,
+                answerText: "U₁₅ = 61",
+                hint: "Cari nilai b dan a terlebih dahulu, kemudian hitung U₁₅ = a + 14b.",
+                steps: [
+                    "U₉ - U₄ = 5b ⇒ 37 - 17 = 5b ⇒ b = 4",
+                    "U₄ = a + 3b ⇒ 17 = a + 12 ⇒ a = 5",
+                    "U₁₅ = a + 14b",
+                    "U₁₅ = 5 + (14 × 4) = 5 + 56 = 61"
+                ]
+            }
+        ];
+
+        // --- APP STATE ---
+        let cards = [...questionBank];
+        let currentIndex = 0;
+        let isFlipped = false;
+        let currentMode = 'study'; // 'study' or 'quiz'
+        let masteredCards = new Set();
+        let currentStreak = 0;
+        let soundEnabled = true;
+
+        // --- WEB AUDIO SYNTHESIZER ---
+        const playSound = (type) => {
+            if (!soundEnabled) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'flip') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.1);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, ctx.currentTime);
+                    osc.frequency.setValueAtTime(180, ctx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                }
+            } catch (e) {
+                // Audio context fallback
+            }
+        };
+
+        // --- DOM ELEMENTS ---
+        const cardContainer = document.getElementById('cardContainer');
+        const flashcard = document.getElementById('flashcard');
+        const cardBadge = document.getElementById('cardBadge');
+        const cardQuestion = document.getElementById('cardQuestion');
+        const cardSequenceDisplay = document.getElementById('cardSequenceDisplay');
+        const cardAnswer = document.getElementById('cardAnswer');
+        const cardSteps = document.getElementById('cardSteps');
+        const cardDifficulty = document.getElementById('cardDifficulty');
+        const hintBtn = document.getElementById('hintBtn');
+
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+        const btnFlip = document.getElementById('btnFlip');
+        const btnShuffle = document.getElementById('btnShuffle');
+        const btnMastered = document.getElementById('btnMastered');
+        const btnReview = document.getElementById('btnReview');
+        const btnGenerateRandom = document.getElementById('btnGenerateRandom');
+
+        const statProgress = document.getElementById('statProgress');
+        const statMastery = document.getElementById('statMastery');
+        const statStreak = document.getElementById('statStreak');
+        const statCategory = document.getElementById('statCategory');
+        const progressBar = document.getElementById('progressBar');
+
+        const modeStudy = document.getElementById('modeStudy');
+        const modeQuiz = document.getElementById('modeQuiz');
+        const quizInputWrapper = document.getElementById('quizInputWrapper');
+        const quizInput = document.getElementById('quizInput');
+        const studyActions = document.getElementById('studyActions');
+        const quizActions = document.getElementById('quizActions');
+        const btnNextQuiz = document.getElementById('btnNextQuiz');
+
+        const formulaModal = document.getElementById('formulaModal');
+        const btnFormula = document.getElementById('btnFormula');
+        const btnCloseFormula = document.getElementById('btnCloseFormula');
+        const btnCloseFormulaBottom = document.getElementById('btnCloseFormulaBottom');
+        const btnSound = document.getElementById('btnSound');
+
+        // --- RENDER CARD FUNCTION ---
+        function renderCard() {
+            if (cards.length === 0) return;
+            const currentCard = cards[currentIndex];
+
+            // Reset Flip State
+            if (isFlipped) {
+                flashcard.classList.remove('rotate-y-180');
+                isFlipped = false;
+            }
+
+            // Populate Text
+            setTimeout(() => {
+                cardBadge.innerText = `Soal #${currentIndex + 1} • ${currentCard.category}`;
+                cardQuestion.innerText = currentCard.question;
+                cardSequenceDisplay.innerHTML = `<span class="font-mono text-indigo-300 font-bold text-lg sm:text-xl">${currentCard.sequence}</span>`;
+                cardAnswer.innerText = currentCard.answerText;
+                cardDifficulty.innerText = `Tingkat: ${currentCard.difficulty}`;
+
+                // Populate Steps
+                cardSteps.innerHTML = currentCard.steps.map(s => `<p>• ${s}</p>`).join('');
+
+                // Category Stat
+                statCategory.innerText = currentCard.category;
+
+                // Quiz input clear
+                quizInput.value = '';
+
+                // Stats Update
+                statProgress.innerText = `${currentIndex + 1} / ${cards.length}`;
+                const masteryPercent = Math.round((masteredCards.size / cards.length) * 100);
+                statMastery.innerText = `${masteryPercent}%`;
+                progressBar.style.width = `${((currentIndex + 1) / cards.length) * 100}%`;
+
+                // Update Prev/Next Buttons
+                btnPrev.disabled = currentIndex === 0;
+            }, isFlipped ? 200 : 0);
+        }
+
+        // --- FLIP CARD LOGIC ---
+        function toggleFlip() {
+            isFlipped = !isFlipped;
+            playSound('flip');
+            if (isFlipped) {
+                flashcard.classList.add('rotate-y-180');
+            } else {
+                flashcard.classList.remove('rotate-y-180');
+            }
+        }
+
+        // --- QUIZ ANSWER CHECK ---
+        function checkQuizAnswer() {
+            const userVal = parseFloat(quizInput.value);
+            const currentCard = cards[currentIndex];
+
+            if (isNaN(userVal)) {
+                showToast('⚠️ Masukkan angka jawaban terlebih dahulu!', 'amber');
+                return;
+            }
+
+            if (userVal === currentCard.answerValue) {
+                playSound('correct');
+                currentStreak++;
+                statStreak.innerText = `🔥 ${currentStreak}`;
+                masteredCards.add(currentIndex);
+                showToast('🎉 Benar sekali! Hebat!', 'emerald');
+                
+                // Trigger Confetti
+                confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { y: 0.7 }
+                });
+
+                if (!isFlipped) toggleFlip();
+            } else {
+                playSound('wrong');
+                currentStreak = 0;
+                statStreak.innerText = `🔥 0`;
+                showToast(`❌ Kurang tepat. Jawaban seharusnya ${currentCard.answerValue}`, 'rose');
+                if (!isFlipped) toggleFlip();
+            }
+        }
+
+        // --- RANDOM QUESTION GENERATOR (BARISAN ONLY) ---
+        function generateRandomQuestion() {
+            const types = ['Un', 'b', 'n'];
+            const chosenType = types[Math.floor(Math.random() * types.length)];
+            
+            let a = Math.floor(Math.random() * 15) + 1; // 1 to 15
+            let b = Math.floor(Math.random() * 8) + 2;  // 2 to 9
+            let n = Math.floor(Math.random() * 15) + 11; // 11 to 25 (n > 10)
+
+            let newQ = {};
+
+            if (chosenType === 'b') {
+                const u1 = a;
+                const u2 = a + b;
+                const u3 = a + 2 * b;
+                const u4 = a + 3 * b;
+                newQ = {
+                    category: "Beda (b) [Acak]",
+                    difficulty: "Sedang",
+                    question: `Diketahui barisan ${u1}, ${u2}, ${u3}, ${u4}, ... Tentukan beda (b) dari barisan tersebut!`,
+                    sequence: `${u1}, ${u2}, ${u3}, ${u4}, ...`,
+                    answerValue: b,
+                    answerText: `b = ${b}`,
+                    hint: "Pengurangan dua suku berurutan: b = U₂ - U₁.",
+                    steps: [
+                        `a = ${u1}`,
+                        `U₂ = ${u2}`,
+                        `b = U₂ - U₁ = ${u2} - ${u1} = ${b}`
+                    ]
+                };
+            } else if (chosenType === 'Un') {
+                const unVal = a + (n - 1) * b;
+                const u1 = a;
+                const u2 = a + b;
+                const u3 = a + 2 * b;
+                newQ = {
+                    category: `Suku ke-n [Acak]`,
+                    difficulty: "Sedang",
+                    question: `Diketahui barisan aritmetika ${u1}, ${u2}, ${u3}, ... Berapakah nilai suku ke-${n} (U<sub>${n}</sub>)?`,
+                    sequence: `${u1}, ${u2}, ${u3}, ...`,
+                    answerValue: unVal,
+                    answerText: `U<sub>${n}</sub> = ${unVal}`,
+                    hint: `Gunakan rumus Uₙ = a + (n - 1)b dengan a = ${a} dan b = ${b}.`,
+                    steps: [
+                        `a = ${a}, b = ${b}, n = ${n}`,
+                        `U<sub>${n}</sub> = ${a} + (${n} - 1) × ${b}`,
+                        `U<sub>${n}</sub> = ${a} + (${n - 1} × ${b})`,
+                        `U<sub>${n}</sub> = ${a} + ${ (n - 1) * b } = ${unVal}`
+                    ]
+                };
+            } else {
+                // Banyak Suku (n)
+                const unVal = a + (n - 1) * b;
+                const u1 = a;
+                const u2 = a + b;
+                const u3 = a + 2 * b;
+                newQ = {
+                    category: `Banyak Suku (n) [Acak]`,
+                    difficulty: "Sulit",
+                    question: `Berapakah banyaknya suku (n) pada barisan aritmetika ${u1}, ${u2}, ${u3}, ..., ${unVal}?`,
+                    sequence: `${u1}, ${u2}, ${u3}, ..., ${unVal}`,
+                    answerValue: n,
+                    answerText: `n = ${n} suku`,
+                    hint: `Suku terakhir Uₙ = ${unVal}. Gunakan ${unVal} = ${a} + (n - 1)${b}.`,
+                    steps: [
+                        `a = ${a}, b = ${b}, Uₙ = ${unVal}`,
+                        `${unVal} = ${a} + (n - 1) × ${b}`,
+                        `${unVal - a} = (n - 1) × ${b}`,
+                        `n - 1 = ${(unVal - a) / b}  ⇒  n = ${n}`
+                    ]
+                };
+            }
+
+            cards.push(newQ);
+            currentIndex = cards.length - 1;
+            renderCard();
+            showToast('✨ Soal baru Barisan Aritmetika berhasil dibuat!', 'indigo');
+        }
+
+        // --- TOAST NOTIFICATION UTILITY ---
+        function showToast(msg, color = 'indigo') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2800);
+        }
+
+        // --- EVENT LISTENERS & SETUP ---
+        cardContainer.addEventListener('click', (e) => {
+            // Prevent flipping when typing inside input or clicking action buttons
+            if (e.target.closest('input') || e.target.closest('button')) return;
+            toggleFlip();
+        });
+
+        btnFlip.addEventListener('click', toggleFlip);
+
+        btnNext.addEventListener('click', () => {
+            if (currentIndex < cards.length - 1) {
+                currentIndex++;
+                renderCard();
+            } else {
+                showToast('🏁 Anda sudah mencapai kartu terakhir!', 'indigo');
+            }
+        });
+
+        btnPrev.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCard();
+            }
+        });
+
+        btnShuffle.addEventListener('click', () => {
+            cards.sort(() => Math.random() - 0.5);
+            currentIndex = 0;
+            masteredCards.clear();
+            renderCard();
+            showToast('🔀 Soal berhasil diacak!', 'indigo');
+        });
+
+        btnMastered.addEventListener('click', () => {
+            masteredCards.add(currentIndex);
+            playSound('correct');
+            showToast('🎉 Mantap! Soal ditandai Paham.', 'emerald');
+            if (currentIndex < cards.length - 1) {
+                currentIndex++;
+            }
+            renderCard();
+        });
+
+        btnReview.addEventListener('click', () => {
+            masteredCards.delete(currentIndex);
+            playSound('wrong');
+            showToast('📌 Soal ditandai untuk diulangi.', 'amber');
+            if (currentIndex < cards.length - 1) {
+                currentIndex++;
+            }
+            renderCard();
+        });
+
+        btnNextQuiz.addEventListener('click', () => {
+            if (currentIndex < cards.length - 1) {
+                currentIndex++;
+            } else {
+                generateRandomQuestion();
+            }
+            renderCard();
+        });
+
+        btnGenerateRandom.addEventListener('click', generateRandomQuestion);
+
+        hintBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showToast(`💡 Hint: ${cards[currentIndex].hint}`, 'amber');
+        });
+
+        // Mode Switching Logic
+        modeStudy.addEventListener('click', () => {
+            currentMode = 'study';
+            modeStudy.className = "px-3 py-1.5 rounded-lg font-medium text-white bg-indigo-600 transition shadow";
+            modeQuiz.className = "px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition";
+            quizInputWrapper.classList.add('hidden');
+            studyActions.classList.remove('hidden');
+            quizActions.classList.add('hidden');
+            renderCard();
+        });
+
+        modeQuiz.addEventListener('click', () => {
+            currentMode = 'quiz';
+            modeQuiz.className = "px-3 py-1.5 rounded-lg font-medium text-white bg-indigo-600 transition shadow";
+            modeStudy.className = "px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition";
+            quizInputWrapper.classList.remove('hidden');
+            studyActions.classList.add('hidden');
+            quizActions.classList.remove('hidden');
+            renderCard();
+        });
+
+        // Formula Modal Toggle
+        const toggleFormula = (show) => {
+            if (show) {
+                formulaModal.classList.remove('hidden');
+                setTimeout(() => formulaModal.classList.remove('opacity-0'), 10);
+            } else {
+                formulaModal.classList.add('opacity-0');
+                setTimeout(() => formulaModal.classList.add('hidden'), 300);
+            }
+        };
+
+        btnFormula.addEventListener('click', () => toggleFormula(true));
+        btnCloseFormula.addEventListener('click', () => toggleFormula(false));
+        btnCloseFormulaBottom.addEventListener('click', () => toggleFormula(false));
+
+        // Sound Toggle
+        btnSound.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            btnSound.innerHTML = soundEnabled 
+                ? '<i class="fa-solid fa-volume-high text-sm"></i>' 
+                : '<i class="fa-solid fa-volume-xmark text-sm text-slate-500"></i>';
+            showToast(soundEnabled ? '🔊 Suara Aktif' : '🔇 Suara Diheningkan', 'indigo');
+        });
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (document.activeElement.tagName === 'INPUT') return;
+            if (e.key === 'ArrowRight') btnNext.click();
+            if (e.key === 'ArrowLeft') btnPrev.click();
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault();
+                toggleFlip();
+            }
+        });
+
+        // Initialize App
+        window.onload = () => {
+            renderCard();
+        };
+    </script>
+</body>
+</html>
