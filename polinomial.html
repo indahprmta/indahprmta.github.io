@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Interaktif Polinomial SMA</title>
+    <!-- Tailwind CSS for modern, premium styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-slate-900 to-purple-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-indigo-500 selection:text-white">
+
+    <header class="w-full py-6 px-4 sm:px-8 border-b border-white/10 backdrop-blur-md bg-black/20 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-indigo-500 to-purple-500 p-3 rounded-2xl shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-graduation-cap text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white via-indigo-200 to-purple-200 bg-clip-text text-transparent">Kuis Polinomial SMA 5 Kelompok</h1>
+                    <p class="text-xs sm:text-sm text-indigo-300 font-medium">Flashcard Interaktif & Sistem Poin Kelompok</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap justify-center">
+                <button onclick="toggleGroupModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white transition-all px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 border border-emerald-400/30 active:scale-95 shadow-md">
+                    <i class="fa-solid fa-users-rectangle"></i>
+                    <span>Skor 5 Kelompok</span>
+                </button>
+                <button onclick="toggleGridModal()" class="bg-indigo-600/60 hover:bg-indigo-600 transition-all px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 border border-indigo-400/30 active:scale-95 shadow-md">
+                    <i class="fa-solid fa-th"></i>
+                    <span>Pilih Nomor</span>
+                </button>
+                <button onclick="resetSession()" class="bg-white/10 hover:bg-white/20 transition-all p-2.5 rounded-xl text-sm font-medium flex items-center gap-2 border border-white/10 active:scale-95" title="Reset Kartu">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span class="hidden sm:inline">Reset</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 max-w-4xl mx-auto w-full my-auto">
+        
+        <!-- Progress Bar & Stats -->
+        <div class="w-full flex justify-between items-center mb-6 text-sm text-indigo-200 px-1">
+            <div class="flex items-center gap-2">
+                <span class="font-semibold text-white bg-indigo-600/50 px-3 py-1 rounded-full border border-indigo-400/30">
+                    Soal <span id="current-card-num">1</span> dari <span id="total-cards-num">20</span>
+                </span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3.5 py-1 rounded-full text-xs font-bold shadow-sm">
+                    <i class="fa-solid fa-star text-amber-400 mr-1"></i> Poin Soal Ini: <span id="card-points" class="text-white text-sm">10</span> Poin
+                </span>
+            </div>
+        </div>
+
+        <!-- Filter Tags -->
+        <div id="filter-container" class="w-full flex flex-wrap gap-2 mb-6 justify-center">
+            <button onclick="filterCategory('all')" class="category-btn active px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 text-white shadow-md shadow-indigo-600/30 transition-all">Semua</button>
+            <button onclick="filterCategory('Operasi Dasar')" class="category-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-indigo-200 transition-all border border-white/10">Operasi Dasar</button>
+            <button onclick="filterCategory('Pembagian')" class="category-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-indigo-200 transition-all border border-white/10">Pembagian & Horner</button>
+            <button onclick="filterCategory('Teorema Sisa')" class="category-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-indigo-200 transition-all border border-white/10">Teorema Sisa</button>
+            <button onclick="filterCategory('Teorema Faktor')" class="category-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-indigo-200 transition-all border border-white/10">Teorema Faktor</button>
+        </div>
+
+        <!-- Flashcard Flip Element -->
+        <div class="w-full perspective-1000 h-[380px] sm:h-[400px] cursor-pointer group" onclick="flipCard()">
+            <div id="flashcard-inner" class="relative w-full h-full transform-style-3d rounded-3xl shadow-2xl border border-white/15 bg-gradient-to-b from-slate-800/90 to-slate-900/90 backdrop-blur-xl">
+                
+                <!-- FRONT OF CARD (Question) -->
+                <div class="absolute inset-0 backface-hidden flex flex-col justify-between p-6 sm:p-10 rounded-3xl">
+                    <div class="flex justify-between items-center">
+                        <span id="card-tag" class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Operasi Dasar</span>
+                        <div class="flex items-center gap-2">
+                            <span id="card-difficulty" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30">Level 1</span>
+                            <span class="text-xs text-slate-400 hidden sm:flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                                <i class="fa-solid fa-hand-pointer animate-pulse text-indigo-400"></i> Klik untuk Jawaban
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="my-auto text-center py-4">
+                        <span class="text-xs uppercase tracking-widest text-indigo-400 font-semibold block mb-2">Pertanyaan</span>
+                        <h2 id="card-question" class="text-xl sm:text-2xl md:text-3xl font-bold text-white leading-relaxed tracking-wide">
+                            Memuat soal...
+                        </h2>
+                    </div>
+
+                    <div class="text-center text-xs text-slate-400">
+                        Soal Kuis Polinomial SMA Kelas XI
+                    </div>
+                </div>
+
+                <!-- BACK OF CARD (Answer & Explanation) -->
+                <div class="absolute inset-0 backface-hidden rotate-y-180 flex flex-col justify-between p-6 sm:p-10 rounded-3xl bg-gradient-to-b from-indigo-950/95 to-slate-900/95">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Penyelesaian</span>
+                        <span class="text-xs text-slate-400">Beri poin untuk kelompok yang berhasil menjawab</span>
+                    </div>
+
+                    <div class="my-auto text-center py-2 overflow-y-auto max-h-[220px] px-2">
+                        <span class="text-xs uppercase tracking-widest text-emerald-400 font-semibold block mb-1">Jawaban Akhir</span>
+                        <div id="card-answer" class="text-xl sm:text-2xl font-extrabold text-emerald-300 mb-3">
+                            -
+                        </div>
+                        <div class="bg-white/5 p-3.5 rounded-2xl border border-white/10 text-left">
+                            <span class="text-[11px] uppercase tracking-wider text-indigo-300 font-semibold block mb-1">Pembahasan Singkat:</span>
+                            <p id="card-explanation" class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                                -
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Award points buttons for groups directly from back of card -->
+                    <div class="text-center pt-2 border-t border-white/10">
+                        <span class="text-[11px] text-indigo-300 font-semibold block mb-2">Beri Poin ke Kelompok:</span>
+                        <div class="flex flex-wrap justify-center gap-1.5 sm:gap-2" id="quick-award-container">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Navigation & Action Controls -->
+        <div class="w-full flex items-center justify-between mt-6 gap-3">
+            <button onclick="prevCard()" class="flex-1 bg-white/10 hover:bg-white/20 text-white py-3.5 px-4 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-2 border border-white/10 active:scale-95 shadow-lg">
+                <i class="fa-solid fa-arrow-left"></i> Sebelumnya
+            </button>
+            
+            <button onclick="toggleGroupModal()" class="bg-gradient-to-r from-emerald-600/30 to-teal-600/30 hover:from-emerald-600/50 hover:to-teal-600/50 text-emerald-300 border border-emerald-500/40 py-3.5 px-4 rounded-2xl font-semibold text-sm transition-all flex items-center gap-2 active:scale-95 shadow-lg" title="Lihat Papan Skor Kelompok">
+                <i class="fa-solid fa-ranking-star"></i> <span class="hidden sm:inline">Papan Skor</span>
+            </button>
+
+            <button onclick="nextCard()" class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white py-3.5 px-4 rounded-2xl font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 active:scale-95">
+                Berikutnya <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Modal: Pilih Nomor Soal -->
+    <div id="grid-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-white/15 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
+                <div>
+                    <h3 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-ol text-indigo-400"></i> Pilih Nomor Soal & Poin
+                    </h3>
+                    <p class="text-xs text-indigo-300 mt-1">Pilih nomor untuk memulai soal pilihan kelompok</p>
+                </div>
+                <button onclick="toggleGridModal()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="overflow-y-auto pr-1 grid grid-cols-2 sm:grid-cols-4 gap-3 my-2" id="question-grid-container">
+                <!-- Dynamically filled via JS -->
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-white/10 flex justify-between items-center text-xs text-slate-400">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-indigo-600 inline-block"></span> Soal Aktif</span>
+                <button onclick="toggleGridModal()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-white font-medium transition-all">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Papan Skor 5 Kelompok -->
+    <div id="group-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-white/15 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl relative flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
+                <div>
+                    <h3 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-trophy text-amber-400"></i> Papan Skor 5 Kelompok Kuis
+                    </h3>
+                    <p class="text-xs text-indigo-300 mt-1">Kelola skor dan perolehan poin setiap kelompok</p>
+                </div>
+                <button onclick="toggleGroupModal()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="overflow-y-auto pr-1 flex flex-col gap-3 my-2" id="group-score-list">
+                <!-- Dynamically filled via JS -->
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-white/10 flex justify-between items-center">
+                <button onclick="resetAllScores()" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 px-4 py-2 rounded-xl text-xs font-semibold transition-all">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Reset Semua Skor
+                </button>
+                <button onclick="toggleGroupModal()" class="bg-indigo-600 hover:bg-indigo-500 px-5 py-2 rounded-xl text-white font-medium text-sm transition-all shadow-lg shadow-indigo-600/30">Selesai / Lanjut</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full py-4 text-center text-xs text-slate-400 border-t border-white/10 bg-black/20">
+        <p>Media Pembelajaran Interaktif Matematika SMA &bull; Kurikulum Merdeka / K-13</p>
+    </footer>
+
+    <script>
+        // Dataset 20 Soal Polinomial Basic SMA beserta Bobot Poin & Level
+        const flashcardsData = [
+            // Kategori: Operasi Dasar (1 - 5)
+            {
+                id: 1,
+                category: "Operasi Dasar",
+                difficulty: "Mudah",
+                points: 10,
+                question: "Tentukan hasil penjumlahan dari polinomial P(x) = 2x³ - 5x² + 4x - 7 dan Q(x) = x³ + 3x² - 2x + 5.",
+                answer: "3x³ - 2x² + 2x - 2",
+                explanation: "Jumlahkan koefisien suku-suku sejenis: (2+1)x³ + (-5+3)x² + (4-2)x + (-7+5) = 3x³ - 2x² + 2x - 2."
+            },
+            {
+                id: 2,
+                category: "Operasi Dasar",
+                difficulty: "Mudah",
+                points: 10,
+                question: "Diketahui P(x) = 4x⁴ - 2x³ + 6x - 8 dan Q(x) = x⁴ + 5x³ - 3x + 2. Tentukan hasil pengurangan P(x) - Q(x).",
+                answer: "3x⁴ - 7x³ + 9x - 10",
+                explanation: "Kurangkan setiap suku sejenis: (4-1)x⁴ + (-2-5)x³ + 0x² + (6-(-3))x + (-8-2) = 3x⁴ - 7x³ + 9x - 10."
+            },
+            {
+                id: 3,
+                category: "Operasi Dasar",
+                difficulty: "Sedang",
+                points: 15,
+                question: "Tentukan hasil perkalian polinomial (x + 2)(x² - 3x + 4).",
+                answer: "x³ - x² - 2x + 8",
+                explanation: "Gunakan sifat distributif: x(x² - 3x + 4) + 2(x² - 3x + 4) = (x³ - 3x² + 4x) + (2x² - 6x + 8) = x³ - x² - 2x + 8."
+            },
+            {
+                id: 4,
+                category: "Operasi Dasar",
+                difficulty: "Sedang",
+                points: 15,
+                question: "Tentukan koefisien x² dari hasil perkalian polinomial (2x - 1)(x³ + 4x² - 5).",
+                answer: "Koefisien x² = -4",
+                explanation: "Suku yang menghasilkan x² didapat dari perkalian (-1)*(4x²) = -4x². Suku lainnya tidak menghasilkan derajat x²."
+            },
+            {
+                id: 5,
+                category: "Operasi Dasar",
+                difficulty: "Mudah",
+                points: 10,
+                question: "Jika P(x) = x³ - 4x + 5, berapakah nilai dari P(-2)?",
+                answer: "P(-2) = 5",
+                explanation: "Substitusi x = -2 ke P(x): P(-2) = (-2)³ - 4(-2) + 5 = -8 + 8 + 5 = 5."
+            },
+
+            // Kategori: Pembagian (6 - 10)
+            {
+                id: 6,
+                category: "Pembagian",
+                difficulty: "Sedang",
+                points: 20,
+                question: "Tentukan hasil bagi H(x) dan sisa S dari pembagian (2x³ - 3x² + 4x - 5) oleh (x - 2).",
+                answer: "H(x) = 2x² + x + 6, S = 7",
+                explanation: "Gunakan metode Horner untuk x = 2: Koefisien [2, -3, 4, -5]. Bawa turun 2 -> 2*2=4 (-3+4=1) -> 1*2=2 (4+2=6) -> 6*2=12 (-5+12=7). Hasil bagi: 2x² + x + 6, Sisa: 7."
+            },
+            {
+                id: 7,
+                category: "Pembagian",
+                difficulty: "Sedang",
+                points: 15,
+                question: "Dengan cara Teorema Sisa / Porogapit, tentukan sisa pembagian (x³ + 2x² - 5x + 1) oleh (x + 3).",
+                answer: "Sisa = 19",
+                explanation: "Substitusi x = -3 ke P(x): P(-3) = (-3)³ + 2(-3)² - 5(-3) + 1 = -27 + 2(9) + 15 + 1 = 19."
+            },
+            {
+                id: 8,
+                category: "Pembagian",
+                difficulty: "Sulit",
+                points: 25,
+                question: "Tentukan hasil bagi dari pembagian (4x³ - x + 7) oleh (2x - 1).",
+                answer: "H(x) = 2x² + x",
+                explanation: "Pembagi (2x - 1) berarti akar x = 1/2. Horner dengan 1/2, bagi hasil akhirnya dengan 2 karena koefisien x adalah 2."
+            },
+            {
+                id: 9,
+                category: "Pembagian",
+                difficulty: "Sulit",
+                points: 30,
+                question: "Jika polinomial P(x) dibagi (x - 1) bersisa 4, dan dibagi (x + 2) bersisa -5, berapakah sisa pembagian P(x) oleh (x² + x - 2)?",
+                answer: "S(x) = 3x + 1",
+                explanation: "Sisa pembagian berderajat 1, misalkan S(x) = ax + b. P(1) = a + b = 4 dan P(-2) = -2a + b = -5. Didapat a = 3, b = 1. Jadi S(x) = 3x + 1."
+            },
+            {
+                id: 10,
+                category: "Pembagian",
+                difficulty: "Sedang",
+                points: 20,
+                question: "Tentukan sisa pembagian polinomial (x⁴ - 3x² + 5) oleh (x² - 4).",
+                answer: "Sisa = 9",
+                explanation: "Substitusikan x² = 4 ke x⁴ - 3x² + 5: (4)² - 3(4) + 5 = 16 - 12 + 5 = 9."
+            },
+
+            // Kategori: Teorema Sisa (11 - 15)
+            {
+                id: 11,
+                category: "Teorema Sisa",
+                difficulty: "Mudah",
+                points: 10,
+                question: "Menurut Teorema Sisa, jika P(x) dibagi oleh (x - c), maka sisa pembagiannya adalah...",
+                answer: "S = P(c)",
+                explanation: "Teorema Sisa menyatakan bahwa sisa pembagian suatu suku banyak P(x) oleh (x - c) sama dengan nilai suku banyak untuk x = c, yaitu P(c)."
+            },
+            {
+                id: 12,
+                category: "Teorema Sisa",
+                difficulty: "Mudah",
+                points: 15,
+                question: "Tentukan sisa pembagian P(x) = x³ - 4x² + 2x - 3 oleh (x - 3).",
+                answer: "Sisa = -6",
+                explanation: "Gunakan Teorema Sisa, S = P(3) = (3)³ - 4(3)² + 2(3) - 3 = 27 - 36 + 6 - 3 = -6."
+            },
+            {
+                id: 13,
+                category: "Teorema Sisa",
+                difficulty: "Sedang",
+                points: 20,
+                question: "Jika suku banyak P(x) = 2x³ + ax² - 4x + 3 dibagi (x + 1) bersisa 6, berapakah nilai a?",
+                answer: "a = 1",
+                explanation: "Sisa = P(-1) = 6. 2(-1)³ + a(-1)² - 4(-1) + 3 = 6 => -2 + a + 4 + 3 = 6 => a + 5 = 6 => a = 1."
+            },
+            {
+                id: 14,
+                category: "Teorema Sisa",
+                difficulty: "Sedang",
+                points: 20,
+                question: "Tentukan sisa pembagian P(x) = 2x³ - 3x² + x - 5 oleh (x - 2).",
+                answer: "Sisa = 1",
+                explanation: "Gunakan Teorema Sisa dengan mensubstitusi x = 2: P(2) = 2(2)³ - 3(2)² + (2) - 5 = 2(8) - 3(4) + 2 - 5 = 16 - 12 + 2 - 5 = 1."
+            },
+            {
+                id: 15,
+                category: "Teorema Sisa",
+                difficulty: "Sulit",
+                points: 30,
+                question: "Sisa pembagian P(x) oleh (x - 2) adalah 5, sedangkan jika dibagi (x + 1) adalah -4. Berapakah sisa jika P(x) dibagi (x² - x - 2)?",
+                answer: "S(x) = 3x - 1",
+                explanation: "P(2) = 5 -> 2a + b = 5. P(-1) = -4 -> -a + b = -4. Eliminasi menghasilkan a = 3 dan b = -1. Jadi S(x) = 3x - 1."
+            },
+
+            // Kategori: Teorema Faktor (16 - 20)
+            {
+                id: 16,
+                category: "Teorema Faktor",
+                difficulty: "Mudah",
+                points: 10,
+                question: "(x - c) dikatakan sebagai faktor dari polinomial P(x) jika dan hanya jika...",
+                answer: "P(c) = 0 (Sisa pembagian = 0)",
+                explanation: "Teorema Faktor menyatakan bahwa suatu bentuk (x - c) merupakan faktor dari P(x) jika nilai suku banyak untuk x = c bernilai nol (tidak ada sisa)."
+            },
+            {
+                id: 17,
+                category: "Teorema Faktor",
+                difficulty: "Sedang",
+                points: 15,
+                question: "Tunjukkan apakah (x - 2) merupakan faktor dari P(x) = x³ - 3x² + x + 2.",
+                answer: "Merupakan faktor (karena P(2) = 0)",
+                explanation: "Uji P(2) = (2)³ - 3(2)² + (2) + 2 = 8 - 12 + 2 + 2 = 0. Karena P(2) = 0, maka (x - 2) adalah faktor."
+            },
+            {
+                id: 18,
+                category: "Teorema Faktor",
+                difficulty: "Sedang",
+                points: 20,
+                question: "Tentukan nilai k agar (x + 1) merupakan faktor dari P(x) = x³ + kx² - 5x + 6.",
+                answer: "k = -10",
+                explanation: "Karena faktor, P(-1) = 0. (-1)³ + k(-1)² - 5(-1) + 6 = 0 => -1 + k + 5 + 6 = 0 => k + 10 = 0 -> k = -10."
+            },
+            {
+                id: 19,
+                category: "Teorema Faktor",
+                difficulty: "Sulit",
+                points: 25,
+                question: "Tentukan semua akar-akar rasional dari persamaan polinomial x³ - 6x² + 11x - 6 = 0.",
+                answer: "x = 1, x = 2, dan x = 3",
+                explanation: "Faktor dari konstanta -6 adalah ±1, ±2, ±3, ±6. Uji nilai yang menghasilkan nol: P(1)=0, P(2)=0, P(3)=0."
+            },
+            {
+                id: 20,
+                category: "Teorema Faktor",
+                difficulty: "Sulit",
+                points: 25,
+                question: "Diketahui salah satu akar dari x³ - 2x² - 5x + 6 = 0 adalah x = 1. Tentukan jumlah semua akar-akar persamaan tersebut.",
+                answer: "Jumlah akar = 2",
+                explanation: "Dari persamaan polinomial ax³ + bx² + cx + d = 0, jumlah akar-akar berdasarkan rumus Vieta adalah -b/a = -(-2)/1 = 2."
+            }
+        ];
+
+        // 5 Kelompok Siswa
+        let groupsData = [
+            { id: 1, name: "Kelompok 1", score: 0, color: "from-blue-600 to-indigo-600" },
+            { id: 2, name: "Kelompok 2", score: 0, color: "from-emerald-600 to-teal-600" },
+            { id: 3, name: "Kelompok 3", score: 0, color: "from-amber-600 to-orange-600" },
+            { id: 4, name: "Kelompok 4", score: 0, color: "from-purple-600 to-pink-600" },
+            { id: 5, name: "Kelompok 5", score: 0, color: "from-rose-600 to-red-600" }
+        ];
+
+        let currentIndex = 0;
+        let isFlipped = false;
+        let currentFilter = 'all';
+        let filteredData = [...flashcardsData];
+
+        // DOM Elements
+        const cardInner = document.getElementById('flashcard-inner');
+        const cardQuestion = document.getElementById('card-question');
+        const cardAnswer = document.getElementById('card-answer');
+        const cardExplanation = document.getElementById('card-explanation');
+        const cardTag = document.getElementById('card-tag');
+        const cardDifficulty = document.getElementById('card-difficulty');
+        const cardPoints = document.getElementById('card-points');
+        const currentCardNum = document.getElementById('current-card-num');
+        const totalCardsNum = document.getElementById('total-cards-num');
+        const categoryBadge = document.getElementById('category-badge');
+        const gridModal = document.getElementById('grid-modal');
+        const groupModal = document.getElementById('group-modal');
+        const questionGridContainer = document.getElementById('question-grid-container');
+        const quickAwardContainer = document.getElementById('quick-award-container');
+        const groupScoreList = document.getElementById('group-score-list');
+
+        // Build question grid buttons
+        function buildQuestionGrid() {
+            questionGridContainer.innerHTML = '';
+            flashcardsData.forEach((card, index) => {
+                const btn = document.createElement('button');
+                btn.className = `p-3 rounded-2xl font-bold text-sm transition-all flex flex-col items-center justify-between border ${
+                    index === currentIndex 
+                        ? 'bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/40 scale-105' 
+                        : 'bg-white/5 hover:bg-white/10 text-indigo-200 border-white/10'
+                }`;
+                btn.innerHTML = `
+                    <div class="flex justify-between w-full items-center mb-1">
+                        <span class="text-xs bg-white/10 px-2 py-0.5 rounded-md">No. ${index + 1}</span>
+                        <span class="text-[10px] text-amber-300 font-semibold"><i class="fa-solid fa-star mr-0.5"></i>${card.points}</span>
+                    </div>
+                    <span class="text-xs font-medium truncate w-full text-center mt-1">${card.category}</span>
+                `;
+                btn.onclick = () => jumpToCard(index);
+                questionGridContainer.appendChild(btn);
+            });
+        }
+
+        // Build quick award buttons on card back
+        function buildQuickAwardButtons() {
+            quickAwardContainer.innerHTML = '';
+            const card = filteredData[currentIndex] || flashcardsData[currentIndex];
+            groupsData.forEach(group => {
+                const btn = document.createElement('button');
+                btn.className = `px-3 py-1.5 rounded-xl font-bold text-xs bg-gradient-to-r ${group.color} text-white shadow-md transition-all active:scale-95 flex items-center gap-1 hover:opacity-90`;
+                btn.innerHTML = `<i class="fa-solid fa-plus"></i> ${group.name.replace('Kelompok ', 'Klp ')} (+${card.points})`;
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    awardPoints(group.id, card.points);
+                };
+                quickAwardContainer.appendChild(btn);
+            });
+        }
+
+        // Build Group Score Modal List
+        function buildGroupScoreModal() {
+            groupScoreList.innerHTML = '';
+            // Sort by highest score
+            const sortedGroups = [...groupsData].sort((a, b) => b.score - a.score);
+            
+            sortedGroups.forEach((group, index) => {
+                const div = document.createElement('div');
+                div.className = `p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between gap-3 ${index === 0 && group.score > 0 ? 'border-amber-400/50 bg-amber-500/10 shadow-lg shadow-amber-500/10' : ''}`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr ${group.color} flex items-center justify-center font-bold text-white shadow-md">
+                            ${index === 0 && group.score > 0 ? '<i class="fa-solid fa-crown text-amber-300"></i>' : group.id}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white text-sm sm:text-base">${group.name}</h4>
+                            <p class="text-xs text-indigo-300">Peringkat #${index + 1}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-base sm:text-lg font-extrabold text-amber-300 bg-amber-500/20 px-3.5 py-1 rounded-xl border border-amber-500/30">
+                            ${group.score} Poin
+                        </span>
+                        <div class="flex gap-1">
+                            <button onclick="adjustScore(${group.id}, -5)" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition-all" title="Kurang 5 Poin">-</button>
+                            <button onclick="adjustScore(${group.id}, 10)" class="w-8 h-8 rounded-xl bg-emerald-500/30 hover:bg-emerald-500/50 text-emerald-300 flex items-center justify-center text-xs transition-all" title="Tambah 10 Poin">+</button>
+                        </div>
+                    </div>
+                `;
+                groupScoreList.appendChild(div);
+            });
+        }
+
+        function awardPoints(groupId, points) {
+            const group = groupsData.find(g => g.id === groupId);
+            if (group) {
+                group.score += points;
+                buildGroupScoreModal();
+                // Show notification or alert modal effect
+                showToast(`Berhasil menambahkan ${points} poin untuk ${group.name}!`);
+            }
+        }
+
+        function adjustScore(groupId, amount) {
+            const group = groupsData.find(g => g.id === groupId);
+            if (group) {
+                group.score = Math.max(0, group.score + amount);
+                buildGroupScoreModal();
+            }
+        }
+
+        function resetAllScores() {
+            groupsData.forEach(g => g.score = 0);
+            buildGroupScoreModal();
+            showToast("Semua skor kelompok telah direset.");
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white px-5 py-3 rounded-2xl shadow-2xl z-50 text-xs sm:text-sm font-semibold border border-indigo-400 animate-bounce flex items-center gap-2';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-300"></i> ${msg}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        function toggleGridModal() {
+            if (gridModal.classList.contains('hidden')) {
+                buildQuestionGrid();
+                gridModal.classList.remove('hidden');
+                gridModal.classList.add('flex');
+            } else {
+                gridModal.classList.remove('flex');
+                gridModal.classList.add('hidden');
+            }
+        }
+
+        function toggleGroupModal() {
+            if (groupModal.classList.contains('hidden')) {
+                buildGroupScoreModal();
+                groupModal.classList.remove('hidden');
+                groupModal.classList.add('flex');
+            } else {
+                groupModal.classList.remove('flex');
+                groupModal.classList.add('hidden');
+            }
+        }
+
+        function jumpToCard(index) {
+            currentFilter = 'all';
+            filteredData = [...flashcardsData];
+            currentIndex = index;
+            isFlipped = false;
+            cardInner.classList.remove('rotate-y-180');
+            updateCard();
+            toggleGridModal();
+        }
+
+        // Initialize flashcard view
+        function updateCard() {
+            if (filteredData.length === 0) {
+                cardQuestion.textContent = "Tidak ada soal untuk kategori ini.";
+                cardAnswer.textContent = "-";
+                cardExplanation.textContent = "-";
+                currentCardNum.textContent = 0;
+                totalCardsNum.textContent = 0;
+                return;
+            }
+
+            if (currentIndex >= filteredData.length) {
+                currentIndex = 0;
+            }
+            if (currentIndex < 0) {
+                currentIndex = filteredData.length - 1;
+            }
+
+            const card = filteredData[currentIndex];
+            cardQuestion.textContent = card.question;
+            cardAnswer.textContent = card.answer;
+            cardExplanation.textContent = card.explanation;
+            cardTag.textContent = card.category;
+            cardDifficulty.textContent = `Level: ${card.difficulty}`;
+            cardPoints.textContent = card.points;
+            
+            // Set difficulty badge color
+            cardDifficulty.className = "text-xs font-bold px-2.5 py-1 rounded-lg border " + 
+                (card.difficulty === 'Mudah' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
+                 card.difficulty === 'Sedang' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 
+                 'bg-rose-500/20 text-rose-300 border-rose-500/30');
+
+            // Find original index in flashcardsData for display
+            const origIndex = flashcardsData.findIndex(item => item.id === card.id);
+            currentCardNum.textContent = origIndex >= 0 ? origIndex + 1 : currentIndex + 1;
+            totalCardsNum.textContent = flashcardsData.length;
+
+            buildQuickAwardButtons();
+
+            if (isFlipped) {
+                flipCard();
+            }
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                cardInner.classList.add('rotate-y-180');
+            } else {
+                cardInner.classList.remove('rotate-y-180');
+            }
+        }
+
+        function nextCard() {
+            if (filteredData.length === 0) return;
+            isFlipped = false;
+            cardInner.classList.remove('rotate-y-180');
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % filteredData.length;
+                updateCard();
+            }, 150);
+        }
+
+        function prevCard() {
+            if (filteredData.length === 0) return;
+            isFlipped = false;
+            cardInner.classList.remove('rotate-y-180');
+            setTimeout(() => {
+                currentIndex = (currentIndex - 1 + filteredData.length) % filteredData.length;
+                updateCard();
+            }, 150);
+        }
+
+        function filterCategory(category) {
+            currentFilter = category;
+            const buttons = document.querySelectorAll('.category-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/30');
+                btn.classList.add('bg-white/10', 'text-indigo-200');
+                if (btn.textContent.toLowerCase().includes(category.toLowerCase()) || (category === 'all' && btn.textContent === 'Semua')) {
+                    btn.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/30');
+                    btn.classList.remove('bg-white/10', 'text-indigo-200');
+                }
+            });
+
+            if (category === 'all') {
+                filteredData = [...flashcardsData];
+                categoryBadge.textContent = "Semua Kategori";
+            } else {
+                filteredData = flashcardsData.filter(item => item.category === category);
+                categoryBadge.textContent = category;
+            }
+
+            currentIndex = 0;
+            isFlipped = false;
+            cardInner.classList.remove('rotate-y-180');
+            updateCard();
+        }
+
+        function resetSession() {
+            currentIndex = 0;
+            isFlipped = false;
+            cardInner.classList.remove('rotate-y-180');
+            filterCategory('all');
+        }
+
+        // Keyboard navigation support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextCard();
+            } else if (e.key === 'ArrowLeft') {
+                prevCard();
+            } else if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                flipCard();
+            }
+        });
+
+        // Initial load
+        window.onload = function() {
+            updateCard();
+        };
+    </script>
+</body>
+</html>
