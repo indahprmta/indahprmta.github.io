@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Interaktif: Kesamaan Dua Matriks (SMA)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- MathJax for LaTeX matrix rendering -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: { fontCache: 'global' },
+            options: {
+                enableMenu: false
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .heading-font {
+            font-family: 'Outfit', sans-serif;
+        }
+        /* 3D Card Flip Mechanics */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 1.25rem;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        /* Custom Scrollbar for solutions */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.5);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.8);
+        }
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-slate-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-xl shadow-md text-white">
+                    <i class="fa-solid me-0 fa-layer-group text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="heading-font text-lg sm:text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-200 bg-clip-text text-transparent">
+                        Kesamaan Dua Matriks
+                    </h1>
+                    <p class="text-xs text-indigo-300">Media Pembelajaran Interaktif Matematika SMA Kelas XI</p>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="flex items-center gap-3 sm:gap-6 bg-slate-900/80 px-4 py-2 rounded-2xl border border-slate-800 text-xs sm:text-sm">
+                <div class="flex items-center gap-2" title="Total Poin Anda">
+                    <i class="fa-solid fa-trophy text-amber-400"></i>
+                    <span class="text-slate-400">Poin:</span>
+                    <span id="score-display" class="font-bold text-amber-400 text-base">0</span>
+                </div>
+                <div class="h-4 w-px bg-slate-800"></div>
+                <div class="flex items-center gap-2" title="Rentetan Jawaban Benar">
+                    <i class="fa-solid fa-fire text-rose-500"></i>
+                    <span class="text-slate-400">Streak:</span>
+                    <span id="streak-display" class="font-bold text-rose-400 text-base">0</span>
+                </div>
+                <div class="h-4 w-px bg-slate-800"></div>
+                <div class="flex items-center gap-2" title="Kartu Terselesaikan">
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                    <span class="text-slate-400">Selesai:</span>
+                    <span id="progress-text" class="font-bold text-emerald-400 text-base">0/20</span>
+                </div>
+                <button onclick="openReportModal()" class="ml-1 p-1.5 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg transition" title="Lihat Laporan">
+                    <i class="fa-solid fa-chart-pie text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-5xl mx-auto px-4 py-6 w-full flex-grow flex flex-col gap-6">
+        
+        <!-- Controls & Filters Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <!-- Filter Badges -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full text-xs">
+                <button onclick="setFilter('all')" id="btn-filter-all" class="px-3 py-1.5 rounded-xl font-medium transition flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm">
+                    <i class="fa-solid fa-border-all text-xs"></i> Semua (20)
+                </button>
+                <button onclick="setFilter('mudah')" id="btn-filter-mudah" class="px-3 py-1.5 rounded-xl font-medium transition flex items-center gap-1.5 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Mudah (10 pt)
+                </button>
+                <button onclick="setFilter('sedang')" id="btn-filter-sedang" class="px-3 py-1.5 rounded-xl font-medium transition flex items-center gap-1.5 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <span class="w-2 h-2 rounded-full bg-sky-400"></span> Sedang (20 pt)
+                </button>
+                <button onclick="setFilter('sulit')" id="btn-filter-sulit" class="px-3 py-1.5 rounded-xl font-medium transition flex items-center gap-1.5 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <span class="w-2 h-2 rounded-full bg-amber-400"></span> Sulit (30 pt)
+                </button>
+                <button onclick="setFilter('hots')" id="btn-filter-hots" class="px-3 py-1.5 rounded-xl font-medium transition flex items-center gap-1.5 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <span class="w-2 h-2 rounded-full bg-purple-400"></span> HOTS (50 pt)
+                </button>
+            </div>
+
+            <!-- View Mode Switcher -->
+            <div class="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs">
+                <button onclick="switchView('single')" id="btn-view-single" class="px-3 py-1 rounded-lg font-medium transition bg-slate-800 text-white">
+                    <i class="fa-solid fa-clone mr-1"></i> Mode Kartu
+                </button>
+                <button onclick="switchView('grid')" id="btn-view-grid" class="px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-grip mr-1"></i> Galeri (20)
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-900 rounded-full h-2 border border-slate-800 overflow-hidden">
+            <div id="main-progress-bar" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-full w-0 transition-all duration-500"></div>
+        </div>
+
+        <!-- SINGLE CARD VIEW AREA -->
+        <div id="single-card-view" class="flex flex-col items-center">
+            
+            <!-- Card Meta Info Header -->
+            <div class="w-full max-w-2xl flex items-center justify-between mb-3 text-sm px-1">
+                <div class="flex items-center gap-2">
+                    <span id="card-index-badge" class="font-bold text-slate-300">Soal 1 dari 20</span>
+                    <span id="difficulty-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Mudah • 10 Poin</span>
+                </div>
+                <div id="mastered-status-tag" class="hidden text-xs font-medium text-emerald-400 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-check"></i> Sudah Dikuasai
+                </div>
+            </div>
+
+            <!-- 3D FLASHCARD CONTAINER -->
+            <div class="w-full max-w-2xl h-[460px] perspective-1000">
+                <div id="flashcard-element" class="card-inner shadow-2xl">
+                    
+                    <!-- FRONT OF CARD -->
+                    <div class="card-front glass-card p-6 sm:p-8 flex flex-col justify-between border border-slate-700/60 rounded-2xl">
+                        
+                        <!-- Top Row inside card -->
+                        <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
+                            <span class="flex items-center gap-1.5 font-mono text-indigo-400">
+                                <i class="fa-solid fa-hashtag"></i> <span id="card-id-text">MAT-01</span>
+                            </span>
+                            <span class="flex items-center gap-1 text-slate-400">
+                                <i class="fa-solid fa-lightbulb text-amber-400"></i> Klik "Petunjuk" jika butuh bantuan
+                            </span>
+                        </div>
+
+                        <!-- Question Prompt -->
+                        <div class="my-auto py-4 flex flex-col items-center text-center">
+                            <p id="question-text" class="text-base sm:text-lg font-medium text-slate-200 mb-4 leading-relaxed">
+                                Loading soal...
+                            </p>
+                            <!-- LaTeX Matrix Display Container -->
+                            <div id="matrix-display" class="p-4 bg-slate-900/80 rounded-xl border border-slate-800/80 text-xl overflow-x-auto max-w-full my-2 min-h-[90px] flex items-center justify-center">
+                                \[ \begin{pmatrix} a & 4 \\ -1 & b \end{pmatrix} = \begin{pmatrix} 3 & 4 \\ -1 & 7 \end{pmatrix} \]
+                            </div>
+                        </div>
+
+                        <!-- Hint Collapsible Drawer -->
+                        <div id="hint-box" class="hidden mb-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-200/90 animate-fadeIn">
+                            <div class="font-semibold text-amber-400 mb-1 flex items-center gap-1">
+                                <i class="fa-solid fa-lightbulb"></i> Petunjuk:
+                            </div>
+                            <span id="hint-text">Dua matriks dikatakan sama jika elemen-elemen yang seletak bernilai sama.</span>
+                        </div>
+
+                        <!-- Input & Interactive Answer Row -->
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <div class="relative flex-grow">
+                                    <input type="text" id="user-answer-input" placeholder="Masukkan jawaban akhir (angka)..." 
+                                        class="w-full bg-slate-900/90 text-white placeholder-slate-500 px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:border-indigo-500 text-sm tracking-wide font-mono transition"
+                                        onkeypress="handleKeyPress(event)">
+                                </div>
+                                <button onclick="checkAnswer()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-3 rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 flex items-center gap-2 whitespace-nowrap">
+                                    <i class="fa-solid fa-paper-plane"></i> Jawab
+                                </button>
+                            </div>
+
+                            <!-- Feedback Message Banner -->
+                            <div id="feedback-banner" class="hidden p-2.5 rounded-xl text-xs text-center font-medium transition"></div>
+
+                            <!-- Front Bottom Actions -->
+                            <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs">
+                                <button onclick="toggleHint()" class="text-amber-400 hover:text-amber-300 font-medium flex items-center gap-1.5 transition">
+                                    <i class="fa-regular fa-lightbulb"></i> <span id="hint-btn-label">Tampilkan Petunjuk</span>
+                                </button>
+                                <button onclick="flipCard()" class="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1.5 transition">
+                                    <span>Lihat Pembahasan</span> <i class="fa-solid fa-rotate"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- BACK OF CARD -->
+                    <div class="card-back glass-card p-6 sm:p-8 flex flex-col justify-between border border-indigo-500/40 rounded-2xl bg-slate-950/95">
+                        
+                        <!-- Top Back Header -->
+                        <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
+                            <span class="font-bold text-indigo-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-book-open"></i> Pembahasan Langkah demi Langkah
+                            </span>
+                            <span id="solution-topic-tag" class="text-slate-400">Kesamaan Matriks</span>
+                        </div>
+
+                        <!-- Solution Detailed Container -->
+                        <div id="solution-container" class="my-auto py-3 overflow-y-auto max-h-[290px] custom-scrollbar text-xs sm:text-sm text-slate-300 space-y-3 pr-2">
+                            <!-- Solution Content Injected Dynamically -->
+                        </div>
+
+                        <!-- Back Action Bar -->
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-800 text-xs">
+                            <button onclick="flipCard()" class="text-slate-400 hover:text-white font-medium flex items-center gap-1.5 transition">
+                                <i class="fa-solid fa-arrow-left"></i> Kembali ke Soal
+                            </button>
+                            <button onclick="markAsMastered()" id="mark-mastered-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-semibold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
+                                <i class="fa-solid fa-check"></i> Tandai Paham
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="flex items-center justify-between w-full max-w-2xl mt-6 gap-3">
+                <button onclick="prevCard()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center gap-2 border border-slate-700">
+                    <i class="fa-solid fa-chevron-left"></i> Sebelum
+                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="randomCard()" class="bg-slate-800 hover:bg-slate-700 text-indigo-400 p-2.5 rounded-xl text-sm transition border border-slate-700" title="Soal Acak">
+                        <i class="fa-solid fa-shuffle"></i>
+                    </button>
+                    <button onclick="resetCurrentCardState()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 p-2.5 rounded-xl text-sm transition border border-slate-700" title="Ulang Soal Ini">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+                <button onclick="nextCard()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                    Selanjutnya <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- GALLERY / GRID VIEW AREA (Initially Hidden) -->
+        <div id="grid-card-view" class="hidden">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="heading-font font-bold text-lg text-slate-200">Daftar Seluruh Flashcard (20 Soal)</h2>
+                <span class="text-xs text-slate-400">Klik salah satu kartu untuk langsung latihan</span>
+            </div>
+            <div id="cards-grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Grid items generated by JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 py-4 text-center text-xs text-slate-500 glass-panel mt-8">
+        <p>© 2026 Aplikasi Flashcard Matematika SMA • Materi: Kesamaan Dua Matriks (Matematika Tingkat Lanjut / Umum XI)</p>
+    </footer>
+
+    <!-- SCORE REPORT MODAL -->
+    <div id="report-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card max-w-md w-full p-6 rounded-2xl border border-slate-700 shadow-2xl relative animate-scaleUp">
+            <button onclick="closeReportModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-indigo-600/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-3 border border-indigo-500/30 text-2xl">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <h3 class="heading-font text-xl font-bold text-white">Laporan Perkembangan</h3>
+                <p class="text-xs text-slate-400 mt-1">Ringkasan hasil latihan Kesamaan Dua Matriks</p>
+            </div>
+
+            <div class="space-y-3 mb-6">
+                <div class="flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-sm">
+                    <span class="text-slate-400">Total Poin Terkumpul</span>
+                    <span id="modal-score" class="font-bold text-amber-400 text-base">0 / 520</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-sm">
+                    <span class="text-slate-400">Kartu Dikuasai</span>
+                    <span id="modal-mastered" class="font-bold text-emerald-400 text-base">0 / 20 (0%)</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-sm">
+                    <span class="text-slate-400">Streak Tertinggi</span>
+                    <span id="modal-streak" class="font-bold text-rose-400 text-base">0</span>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="resetAllProgress()" class="w-1/2 py-2.5 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-400 font-semibold text-xs hover:bg-rose-500/20 transition">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Reset Semua
+                </button>
+                <button onclick="closeReportModal()" class="w-1/2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition shadow-lg shadow-indigo-600/30">
+                    Tutup & Lanjut
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* WEB AUDIO API SOUND EFFECTS SYNTHESIZER */
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playFlip() {
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.08);
+            }
+            playCorrect() {
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.1, now + idx * 0.07);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.2);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.07);
+                    osc.stop(now + idx * 0.07 + 0.2);
+                });
+            }
+            playWrong() {
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.exponentialRampToValueAtTime(110, now + 0.25);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+        }
+        const sfx = new SoundFX();
+    </script>
+
+    <script>
+        /* 20 QUESTIONS DATASET FOR KESAMAAN DUA MATRIKS */
+        const questionsData = [
+            /* LEVEL 1: MUDAH (10 POIN) */
+            {
+                id: 1,
+                code: "MAT-01",
+                difficulty: "mudah",
+                points: 10,
+                title: "Nilai Variabel Sederhana",
+                question: "Diketahui kesamaan matriks berikut. Tentukan nilai $a + b$.",
+                matrixLatex: "\\[ \\begin{pmatrix} a & 4 \\\\ -1 & b \\end{pmatrix} = \\begin{pmatrix} 3 & 4 \\\\ -1 & 7 \\end{pmatrix} \\]",
+                acceptedAnswers: ["10"],
+                hint: "Samakan elemen seletak pada baris 1 kolom 1 untuk mendapat $a$, dan baris 2 kolom 2 untuk mendapat $b$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ol class="list-decimal list-inside space-y-1.5 mt-1">
+                        <li>Samakan elemen seletak baris 1 kolom 1: <br>&emsp; $a = 3$</li>
+                        <li>Samakan elemen seletak baris 2 kolom 2: <br>&emsp; $b = 7$</li>
+                        <li>Hitung nilai $a + b$: <br>&emsp; $a + b = 3 + 7 = 10$</li>
+                    </ol>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 10
+                    </div>
+                `
+            },
+            {
+                id: 2,
+                code: "MAT-02",
+                difficulty: "mudah",
+                points: 10,
+                title: "Perkalian Dua Variabel",
+                question: "Diketahui matriks sama. Berapakah nilai dari $x \\times y$?",
+                matrixLatex: "\\[ \\begin{pmatrix} 2x & 5 \\\\ 0 & y+3 \\end{pmatrix} = \\begin{pmatrix} 8 & 5 \\\\ 0 & 10 \\end{pmatrix} \\]",
+                acceptedAnswers: ["28"],
+                hint: "Cari $2x = 8 \\Rightarrow x = 4$, lalu $y + 3 = 10 \\Rightarrow y = 7$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ul class="list-disc list-inside space-y-1 mt-1">
+                        <li>Dari elemen $(1,1)$: $2x = 8 \\implies x = 4$</li>
+                        <li>Dari elemen $(2,2)$: $y + 3 = 10 \\implies y = 7$</li>
+                        <li>Nilai $x \\times y = 4 \\times 7 = 28$</li>
+                    </ul>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 28
+                    </div>
+                `
+            },
+            {
+                id: 3,
+                code: "MAT-03",
+                difficulty: "mudah",
+                points: 10,
+                title: "Substitusi Linier Sederhana",
+                question: "Jika dua matriks berikut sama, hitunglah nilai $x + 2y$.",
+                matrixLatex: "\\[ \\begin{pmatrix} x-2 & 3 \\\\ 6 & 2y \\end{pmatrix} = \\begin{pmatrix} 5 & 3 \\\\ 6 & -8 \\end{pmatrix} \\]",
+                acceptedAnswers: ["-1"],
+                hint: "Selesaikan $x - 2 = 5$ dan $2y = -8$. Lalu hitung $x + 2y$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ul class="list-disc list-inside space-y-1 mt-1">
+                        <li>Elemen $(1,1)$: $x - 2 = 5 \\implies x = 7$</li>
+                        <li>Elemen $(2,2)$: $2y = -8 \\implies y = -4$</li>
+                        <li>Hitung $x + 2y$: <br>&emsp; $7 + 2(-4) = 7 - 8 = -1$</li>
+                    </ul>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: -1
+                    </div>
+                `
+            },
+            {
+                id: 4,
+                code: "MAT-04",
+                difficulty: "mudah",
+                points: 10,
+                title: "Kesamaan Matriks P = Q",
+                question: "Diketahui matriks $P = \\begin{pmatrix} 3a & -2 \\\\ 4 & b+1 \\end{pmatrix}$ dan $Q = \\begin{pmatrix} 9 & -2 \\\\ 4 & 5 \\end{pmatrix}$. Jika $P = Q$, nilai $a \\cdot b$ adalah...",
+                matrixLatex: "\\[ P = Q \\implies \\begin{pmatrix} 3a & -2 \\\\ 4 & b+1 \\end{pmatrix} = \\begin{pmatrix} 9 & -2 \\\\ 4 & 5 \\end{pmatrix} \\]",
+                acceptedAnswers: ["12"],
+                hint: "Hitung $3a = 9$ dan $b + 1 = 5$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ul class="list-disc list-inside space-y-1 mt-1">
+                        <li>$3a = 9 \\implies a = 3$</li>
+                        <li>$b + 1 = 5 \\implies b = 4$</li>
+                        <li>$a \\cdot b = 3 \\cdot 4 = 12$</li>
+                    </ul>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 12
+                    </div>
+                `
+            },
+            {
+                id: 5,
+                code: "MAT-05",
+                difficulty: "mudah",
+                points: 10,
+                title: "Pengurangan Variabel",
+                question: "Jika $\\begin{pmatrix} 5 & x+1 \\\\ y-3 & 2 \\end{pmatrix} = \\begin{pmatrix} 5 & 8 \\\\ 4 & 2 \\end{pmatrix}$, tentukan nilai $x - y$.",
+                matrixLatex: "\\[ \\begin{pmatrix} 5 & x+1 \\\\ y-3 & 2 \\end{pmatrix} = \\begin{pmatrix} 5 & 8 \\\\ 4 & 2 \\end{pmatrix} \\]",
+                acceptedAnswers: ["0"],
+                hint: "$x + 1 = 8 \\Rightarrow x = 7$ dan $y - 3 = 4 \\Rightarrow y = 7$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ul class="list-disc list-inside space-y-1 mt-1">
+                        <li>Elemen $(1,2)$: $x + 1 = 8 \\implies x = 7$</li>
+                        <li>Elemen $(2,1)$: $y - 3 = 4 \\implies y = 7$</li>
+                        <li>Nilai $x - y = 7 - 7 = 0$</li>
+                    </ul>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 0
+                    </div>
+                `
+            },
+
+            /* LEVEL 2: SEDANG (20 POIN) */
+            {
+                id: 6,
+                code: "MAT-06",
+                difficulty: "sedang",
+                points: 20,
+                title: "Sistem Persamaan 2 Variabel (SPLDV)",
+                question: "Diketahui kesamaan matriks di bawah. Berapakah nilai dari $x + y$?",
+                matrixLatex: "\\[ \\begin{pmatrix} 2x+y & 3 \\\\ 1 & x-y \\end{pmatrix} = \\begin{pmatrix} 12 & 3 \\\\ 1 & 3 \\end{pmatrix} \\]",
+                acceptedAnswers: ["7"],
+                hint: "Gunakan eliminasi/substitusi pada sistem: (1) $2x+y=12$ dan (2) $x-y=3$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ol class="list-decimal list-inside space-y-1 mt-1">
+                        <li>$2x + y = 12$</li>
+                        <li>$x - y = 3$</li>
+                        <li>Jumlahkan kedua persamaan: <br>&emsp; $(2x+y) + (x-y) = 12 + 3 \\implies 3x = 15 \\implies x = 5$</li>
+                        <li>Substitusi $x = 5$: <br>&emsp; $5 - y = 3 \\implies y = 2$</li>
+                        <li>Hitung $x + y = 5 + 2 = 7$</li>
+                    </ol>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 7
+                    </div>
+                `
+            },
+            {
+                id: 7,
+                code: "MAT-07",
+                difficulty: "sedang",
+                points: 20,
+                title: "Bentuk Selisih Kuadrat",
+                question: "Diketahui $A = \\begin{pmatrix} x+y & 2 \\\\ 3 & x-y \\end{pmatrix}$ dan $B = \\begin{pmatrix} 8 & 2 \\\\ 3 & 2 \\end{pmatrix}$. Jika $A = B$, tentukan nilai $x^2 - y^2$.",
+                matrixLatex: "\\[ A = B \\implies \\begin{pmatrix} x+y & 2 \\\\ 3 & x-y \\end{pmatrix} = \\begin{pmatrix} 8 & 2 \\\\ 3 & 2 \\end{pmatrix} \\]",
+                acceptedAnswers: ["16"],
+                hint: "Ingat identitas aljabar: $x^2 - y^2 = (x+y)(x-y)$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ul class="list-disc list-inside space-y-1 mt-1">
+                        <li>$x + y = 8$</li>
+                        <li>$x - y = 2$</li>
+                        <li>Gunakan rumus selisih kuadrat: <br>&emsp; $x^2 - y^2 = (x+y)(x-y) = 8 \\times 2 = 16$</li>
+                    </ul>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 16
+                    </div>
+                `
+            },
+            {
+                id: 8,
+                code: "MAT-08",
+                difficulty: "sedang",
+                points: 20,
+                title: "SPLDV Kombinasi Linier",
+                question: "Diketahui $K = \\begin{pmatrix} a+2b & -1 \\\\ 4 & 2a-b \\end{pmatrix}$ dan $L = \\begin{pmatrix} 7 & -1 \\\\ 4 & 4 \\end{pmatrix}$. Jika $K = L$, nilai $a + b$ adalah...",
+                matrixLatex: "\\[ \\begin{pmatrix} a+2b & -1 \\\\ 4 & 2a-b \\end{pmatrix} = \\begin{pmatrix} 7 & -1 \\\\ 4 & 4 \\end{pmatrix} \\]",
+                acceptedAnswers: ["5"],
+                hint: "Eliminasi variabel $b$ dari $a+2b=7$ dan $2a-b=4$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ol class="list-decimal list-inside space-y-1 mt-1">
+                        <li>$a + 2b = 7 \\quad (\\times 1) \\implies a + 2b = 7$</li>
+                        <li>$2a - b = 4 \\quad (\\times 2) \\implies 4a - 2b = 8$</li>
+                        <li>Jumlahkan: $5a = 15 \\implies a = 3$</li>
+                        <li>Substitusi: $3 + 2b = 7 \\implies 2b = 4 \\implies b = 2$</li>
+                        <li>Nilai $a + b = 3 + 2 = 5$</li>
+                    </ol>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 5
+                    </div>
+                `
+            },
+            {
+                id: 9,
+                code: "MAT-09",
+                difficulty: "sedang",
+                points: 20,
+                title: "Jumlah Empat Variabel",
+                question: "Diketahui matriks $P = \\begin{pmatrix} 2a & a+b \\\\ b+c & 2d \\end{pmatrix}$ dan $Q = \\begin{pmatrix} 6 & 5 \\\\ 7 & 8 \\end{pmatrix}$. Jika $P = Q$, tentukan nilai $a+b+c+d$.",
+                matrixLatex: "\\[ \\begin{pmatrix} 2a & a+b \\\\ b+c & 2d \\end{pmatrix} = \\begin{pmatrix} 6 & 5 \\\\ 7 & 8 \\end{pmatrix} \\]",
+                acceptedAnswers: ["14"],
+                hint: "Selesaikan berurutan dari $2a = 6$, lalu substitusi ke $a+b=5$, $b+c=7$, dan $2d=8$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ul class="list-disc list-inside space-y-1 mt-1">
+                        <li>$2a = 6 \\implies a = 3$</li>
+                        <li>$a + b = 5 \\implies 3 + b = 5 \\implies b = 2$</li>
+                        <li>$b + c = 7 \\implies 2 + c = 7 \\implies c = 5$</li>
+                        <li>$2d = 8 \\implies d = 4$</li>
+                        <li>Jumlah: $a + b + c + d = 3 + 2 + 5 + 4 = 14$</li>
+                    </ul>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 14
+                    </div>
+                `
+            },
+            {
+                id: 10,
+                code: "MAT-10",
+                difficulty: "sedang",
+                points: 20,
+                title: "Kesamaan Tiga Variabel Bertingkat",
+                question: "Jika $A = \\begin{pmatrix} 3x & 2 \\\\ 5 & 8 \\end{pmatrix}$ dan $B = \\begin{pmatrix} 9 & 2 \\\\ y+1 & z-2 \\end{pmatrix}$ dengan $A = B$, hitunglah $x + y + z$.",
+                matrixLatex: "\\[ \\begin{pmatrix} 3x & 2 \\\\ 5 & 8 \\end{pmatrix} = \\begin{pmatrix} 9 & 2 \\\\ y+1 & z-2 \\end{pmatrix} \\]",
+                acceptedAnswers: ["17"],
+                hint: "Cari $x$ dari $3x=9$, $y$ dari $y+1=5$, dan $z$ dari $z-2=8$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ul class="list-disc list-inside space-y-1 mt-1">
+                        <li>$3x = 9 \\implies x = 3$</li>
+                        <li>$y + 1 = 5 \\implies y = 4$</li>
+                        <li>$z - 2 = 8 \\implies z = 10$</li>
+                        <li>Hasil $x + y + z = 3 + 4 + 10 = 17$</li>
+                    </ul>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 17
+                    </div>
+                `
+            },
+            {
+                id: 11,
+                code: "MAT-11",
+                difficulty: "sedang",
+                points: 20,
+                title: "Sistem Persamaan Matriks Silang",
+                question: "Jika $\\begin{pmatrix} 2x & x+y \\\\ 1 & 6 \\end{pmatrix} = \\begin{pmatrix} y+3 & 9 \\\\ 1 & 6 \\end{pmatrix}$, tentukan nilai $x \\cdot y$.",
+                matrixLatex: "\\[ \\begin{pmatrix} 2x & x+y \\\\ 1 & 6 \\end{pmatrix} = \\begin{pmatrix} y+3 & 9 \\\\ 1 & 6 \\end{pmatrix} \\]",
+                acceptedAnswers: ["20"],
+                hint: "Persamaan (1): $2x - y = 3$, Persamaan (2): $x + y = 9$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ol class="list-decimal list-inside space-y-1 mt-1">
+                        <li>$2x = y + 3 \\implies 2x - y = 3$</li>
+                        <li>$x + y = 9$</li>
+                        <li>Jumlahkan kedua persamaan: <br>&emsp; $3x = 12 \\implies x = 4$</li>
+                        <li>Substitusi ke persamaan (2): <br>&emsp; $4 + y = 9 \\implies y = 5$</li>
+                        <li>Hitung $x \\cdot y = 4 \\times 5 = 20$</li>
+                    </ol>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 20
+                    </div>
+                `
+            },
+
+            /* LEVEL 3: SULIT (30 POIN) */
+            {
+                id: 12,
+                code: "MAT-12",
+                difficulty: "sulit",
+                points: 30,
+                title: "Kesamaan dengan Transpose $A = B^T$",
+                question: "Diketahui matriks $A = \\begin{pmatrix} a-b & 1 \\\\ 3 & a+b \\end{pmatrix}$ dan $B = \\begin{pmatrix} 2 & 3 \\\\ 1 & 8 \\end{pmatrix}$. Jika $A = B^T$, tentukan nilai $a^2 - b^2$.",
+                matrixLatex: "\\[ B^T = \\begin{pmatrix} 2 & 1 \\\\ 3 & 8 \\end{pmatrix} \\implies \\begin{pmatrix} a-b & 1 \\\\ 3 & a+b \\end{pmatrix} = \\begin{pmatrix} 2 & 1 \\\\ 3 & 8 \\end{pmatrix} \\]",
+                acceptedAnswers: ["16"],
+                hint: "Transpose matriks B dulu dengan menukar baris menjadi kolom. Lalu samakan elemennya.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ol class="list-decimal list-inside space-y-1 mt-1">
+                        <li>Hitung $B^T = \\begin{pmatrix} 2 & 1 \\\\ 3 & 8 \\end{pmatrix}$</li>
+                        <li>Karesponensi elemen: <br>&emsp; $a - b = 2$ <br>&emsp; $a + b = 8$</li>
+                        <li>Hitung $a^2 - b^2 = (a-b)(a+b) = 2 \\times 8 = 16$</li>
+                    </ol>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 16
+                    </div>
+                `
+            },
+            {
+                id: 13,
+                code: "MAT-13",
+                difficulty: "sulit",
+                points: 30,
+                title: "Persamaan Kuadrat & Syarat Negatif",
+                question: "Diketahui $P = \\begin{pmatrix} x^2 & 4 \\\\ -3 & y \\end{pmatrix}$ dan $Q = \\begin{pmatrix} 25 & 4 \\\\ -3 & 2x+1 \\end{pmatrix}$. Jika $P = Q$ dan $x < 0$, tentukan nilai $y$.",
+                matrixLatex: "\\[ \\begin{pmatrix} x^2 & 4 \\\\ -3 & y \\end{pmatrix} = \\begin{pmatrix} 25 & 4 \\\\ -3 & 2x+1 \\end{pmatrix} \\]",
+                acceptedAnswers: ["-9"],
+                hint: "$x^2 = 25 \\Rightarrow x = \\pm 5$. Karena syarat $x < 0$, ambil $x = -5$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ul class="list-disc list-inside space-y-1 mt-1">
+                        <li>$x^2 = 25 \\implies x = 5$ atau $x = -5$</li>
+                        <li>Karena syarat $x < 0$, maka $x = -5$</li>
+                        <li>Elemen $(2,2)$: $y = 2x + 1$</li>
+                        <li>Substitusi $x = -5$: <br>&emsp; $y = 2(-5) + 1 = -10 + 1 = -9$</li>
+                    </ul>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: -9
+                    </div>
+                `
+            },
+            {
+                id: 14,
+                code: "MAT-14",
+                difficulty: "sulit",
+                points: 30,
+                title: "Bentuk Eksponen / Perpangkatan",
+                question: "Diketahui matriks $K = \\begin{pmatrix} 3^x & 8 \\\\ 5 & 2^{y+1} \\end{pmatrix}$ dan $L = \\begin{pmatrix} 81 & 8 \\\\ 5 & 32 \\end{pmatrix}$. Jika $K = L$, nilai $x + y$ adalah...",
+                matrixLatex: "\\[ \\begin{pmatrix} 3^x & 8 \\\\ 5 & 2^{y+1} \\end{pmatrix} = \\begin{pmatrix} 81 & 8 \\\\ 5 & 32 \\end{pmatrix} \\]",
+                acceptedAnswers: ["8"],
+                hint: "Ubah $81 = 3^4$ dan $32 = 2^5$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ul class="list-disc list-inside space-y-1 mt-1">
+                        <li>$3^x = 81 = 3^4 \\implies x = 4$</li>
+                        <li>$2^{y+1} = 32 = 2^5 \\implies y + 1 = 5 \\implies y = 4$</li>
+                        <li>Nilai $x + y = 4 + 4 = 8$</li>
+                    </ul>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 8
+                    </div>
+                `
+            },
+            {
+                id: 15,
+                code: "MAT-15",
+                difficulty: "sulit",
+                points: 30,
+                title: "Sistem Linier dengan Transpose $B^T$",
+                question: "Diketahui matriks $A = \\begin{pmatrix} 2a+b & -3 \\\\ 5 & 3a-2b \\end{pmatrix}$ dan $B = \\begin{pmatrix} 7 & 5 \\\\ -3 & 7 \\end{pmatrix}$. Jika $A = B^T$, tentukan nilai $a \\times b$.",
+                matrixLatex: "\\[ B^T = \\begin{pmatrix} 7 & -3 \\\\ 5 & 7 \\end{pmatrix} \\implies \\begin{pmatrix} 2a+b & -3 \\\\ 5 & 3a-2b \\end{pmatrix} = \\begin{pmatrix} 7 & -3 \\\\ 5 & 7 \\end{pmatrix} \\]",
+                acceptedAnswers: ["3"],
+                hint: "Ubah $B$ menjadi $B^T$. Selesaikan persamaan $2a+b=7$ dan $3a-2b=7$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ol class="list-decimal list-inside space-y-1 mt-1">
+                        <li>$2a + b = 7 \\implies b = 7 - 2a$</li>
+                        <li>$3a - 2b = 7$</li>
+                        <li>Substitusi $b$: <br>&emsp; $3a - 2(7 - 2a) = 7$ <br>&emsp; $3a - 14 + 4a = 7 \\implies 7a = 21 \\implies a = 3$</li>
+                        <li>Maka $b = 7 - 2(3) = 1$</li>
+                        <li>Hasil $a \\times b = 3 \\times 1 = 3$</li>
+                    </ol>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 3
+                    </div>
+                `
+            },
+            {
+                id: 16,
+                code: "MAT-16",
+                difficulty: "sulit",
+                points: 30,
+                title: "Bentuk Logaritma",
+                question: "Diketahui matriks $M = \\begin{pmatrix} \\log_2 x & 3 \\\\ 1 & 4 \\end{pmatrix}$ dan $N = \\begin{pmatrix} 3 & 3 \\\\ 1 & \\log_3 y \\end{pmatrix}$. Jika $M = N$, tentukan nilai $x + y$.",
+                matrixLatex: "\\[ \\begin{pmatrix} \\log_2 x & 3 \\\\ 1 & 4 \\end{pmatrix} = \\begin{pmatrix} 3 & 3 \\\\ 1 & \\log_3 y \\end{pmatrix} \\]",
+                acceptedAnswers: ["89"],
+                hint: "Gunakan definisi logaritma: $\\log_a b = c \\Leftrightarrow a^c = b$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ul class="list-disc list-inside space-y-1 mt-1">
+                        <li>$\\log_2 x = 3 \\implies x = 2^3 = 8$</li>
+                        <li>$\\log_3 y = 4 \\implies y = 3^4 = 81$</li>
+                        <li>Nilai $x + y = 8 + 81 = 89$</li>
+                    </ul>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 89
+                    </div>
+                `
+            },
+
+            /* LEVEL 4: HOTS / TANTANGAN (50 POIN) */
+            {
+                id: 17,
+                code: "MAT-17",
+                difficulty: "hots",
+                points: 50,
+                title: "Substitusi Aljabar Kompleks & Transpose",
+                question: "Diketahui $A = \\begin{pmatrix} x+y & 5 \\\\ -2 & x^2-y^2 \\end{pmatrix}$ dan $B = \\begin{pmatrix} 10 & -2 \\\\ 5 & 40 \\end{pmatrix}$. Jika $A = B^T$, tentukan nilai $x - y$.",
+                matrixLatex: "\\[ B^T = \\begin{pmatrix} 10 & 5 \\\\ -2 & 40 \\end{pmatrix} \\implies \\begin{pmatrix} x+y & 5 \\\\ -2 & x^2-y^2 \\end{pmatrix} = \\begin{pmatrix} 10 & 5 \\\\ -2 & 40 \\end{pmatrix} \\]",
+                acceptedAnswers: ["4"],
+                hint: "$x+y = 10$ dan $x^2-y^2 = (x+y)(x-y) = 40$. Substitusikan $x+y$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ol class="list-decimal list-inside space-y-1 mt-1">
+                        <li>Transposkan matriks $B$: <br>&emsp; $B^T = \\begin{pmatrix} 10 & 5 \\\\ -2 & 40 \\end{pmatrix}$</li>
+                        <li>Dari elemen $(1,1)$: $x + y = 10$</li>
+                        <li>Dari elemen $(2,2)$: $x^2 - y^2 = 40$</li>
+                        <li>Gunakan identitas aljabar: <br>&emsp; $(x+y)(x-y) = 40$ <br>&emsp; $10(x-y) = 40 \\implies x - y = 4$</li>
+                    </ol>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 4
+                    </div>
+                `
+            },
+            {
+                id: 18,
+                code: "MAT-18",
+                difficulty: "hots",
+                points: 50,
+                title: "Sistem SPLDV Ganda 4 Variabel",
+                question: "Diketahui $P = \\begin{pmatrix} a+b & 2c+d \\\\ a-2b & c-d \\end{pmatrix}$ dan $Q = \\begin{pmatrix} 5 & 8 \\\\ -1 & 1 \\end{pmatrix}$. Jika $P = Q$, berapakah nilai $(a+c) - (b+d)$?",
+                matrixLatex: "\\[ \\begin{pmatrix} a+b & 2c+d \\\\ a-2b & c-d \\end{pmatrix} = \\begin{pmatrix} 5 & 8 \\\\ -1 & 1 \\end{pmatrix} \\]",
+                acceptedAnswers: ["2"],
+                hint: "Selesaikan 2 sistem SPLDV terpisah: untuk $(a,b)$ dan untuk $(c,d)$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ol class="list-decimal list-inside space-y-1 mt-1">
+                        <li>Sistem I: <br>&emsp; $a+b=5$ dan $a-2b=-1 \\implies 3b=6 \\implies b=2, a=3$</li>
+                        <li>Sistem II: <br>&emsp; $2c+d=8$ dan $c-d=1 \\implies 3c=9 \\implies c=3, d=2$</li>
+                        <li>Hitung $(a+c) - (b+d)$: <br>&emsp; $(3+3) - (2+2) = 6 - 4 = 2$</li>
+                    </ol>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 2
+                    </div>
+                `
+            },
+            {
+                id: 19,
+                code: "MAT-19",
+                difficulty: "hots",
+                points: 50,
+                title: "Operasi Bentuk Akar, Pangkat & Perkalian",
+                question: "Diketahui $A = \\begin{pmatrix} 2^a & b+2 \\\\ \\sqrt{c} & 3d \\end{pmatrix}$ dan $B = \\begin{pmatrix} 16 & 7 \\\\ 4 & 9 \\end{pmatrix}$. Jika $A = B$, tentukan nilai $a + b + c + d$.",
+                matrixLatex: "\\[ \\begin{pmatrix} 2^a & b+2 \\\\ \\sqrt{c} & 3d \\end{pmatrix} = \\begin{pmatrix} 16 & 7 \\\\ 4 & 9 \\end{pmatrix} \\]",
+                acceptedAnswers: ["28"],
+                hint: "Cari nilai $a, b, c, d$ satu per satu dari elemen matriks yang bersesuaian.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ul class="list-disc list-inside space-y-1 mt-1">
+                        <li>$2^a = 16 = 2^4 \\implies a = 4$</li>
+                        <li>$b + 2 = 7 \\implies b = 5$</li>
+                        <li>$\\sqrt{c} = 4 \\implies c = 16$</li>
+                        <li>$3d = 9 \\implies d = 3$</li>
+                        <li>Jumlahkan: $a + b + c + d = 4 + 5 + 16 + 3 = 28$</li>
+                    </ul>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 28
+                    </div>
+                `
+            },
+            {
+                id: 20,
+                code: "MAT-20",
+                difficulty: "hots",
+                points: 50,
+                title: "Tantangan Utama Kesamaan & Transpose Matriks",
+                question: "Diketahui dua matriks $A = \\begin{pmatrix} x+3y & 8 \\\\ 1 & 5 \\end{pmatrix}$ dan $B = \\begin{pmatrix} 11 & 1 \\\\ y+5 & 5 \\end{pmatrix}$. Jika $A = B^T$, berapakah nilai dari $x^2 + y^2$?",
+                matrixLatex: "\\[ B^T = \\begin{pmatrix} 11 & y+5 \\\\ 1 & 5 \\end{pmatrix} \\implies \\begin{pmatrix} x+3y & 8 \\\\ 1 & 5 \\end{pmatrix} = \\begin{pmatrix} 11 & y+5 \\\\ 1 & 5 \\end{pmatrix} \\]",
+                acceptedAnswers: ["13"],
+                hint: "Selesaikan $8 = y+5 \\Rightarrow y = 3$. Kemudian $x + 3(3) = 11 \\Rightarrow x = 2$. Hitung $x^2 + y^2$.",
+                solution: `
+                    <p class="font-semibold text-indigo-300">Langkah Penyelesaian:</p>
+                    <ol class="list-decimal list-inside space-y-1 mt-1">
+                        <li>Transposkan matriks $B$: <br>&emsp; $B^T = \\begin{pmatrix} 11 & y+5 \\\\ 1 & 5 \\end{pmatrix}$</li>
+                        <li>Elemen $(1,2)$: $8 = y + 5 \\implies y = 3$</li>
+                        <li>Elemen $(1,1)$: $x + 3y = 11 \\implies x + 3(3) = 11 \\implies x = 2$</li>
+                        <li>Hitung $x^2 + y^2 = 2^2 + 3^2 = 4 + 9 = 13$</li>
+                    </ol>
+                    <div class="mt-2 p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-emerald-300 font-semibold">
+                        Jawaban Akhir: 13
+                    </div>
+                `
+            }
+        ];
+    </script>
+
+    <script>
+        /* APPLICATION STATE */
+        let currentIndex = 0;
+        let activeFilter = 'all';
+        let viewMode = 'single'; // 'single' or 'grid'
+        let isFlipped = false;
+        let score = 0;
+        let streak = 0;
+        let highestStreak = 0;
+        let masteredCards = new Set();
+        let currentFilteredIndices = [];
+
+        /* INITIALIZATION */
+        window.addEventListener('DOMContentLoaded', () => {
+            updateFilteredIndices();
+            renderCurrentCard();
+            renderGridGallery();
+            updateStatsUI();
+        });
+
+        /* STATS & MODAL MANAGEMENT */
+        function updateStatsUI() {
+            document.getElementById('score-display').innerText = score;
+            document.getElementById('streak-display').innerText = streak;
+            document.getElementById('progress-text').innerText = `${masteredCards.size}/20`;
+            
+            const progressPercent = (masteredCards.size / 20) * 100;
+            document.getElementById('main-progress-bar').style.width = `${progressPercent}%`;
+
+            const modalScore = document.getElementById('modal-score');
+            const modalMastered = document.getElementById('modal-mastered');
+            const modalStreak = document.getElementById('modal-streak');
+
+            if (modalScore) modalScore.innerText = `${score} / 520`;
+            if (modalMastered) modalMastered.innerText = `${masteredCards.size} / 20 (${Math.round(progressPercent)}%)`;
+            if (modalStreak) modalStreak.innerText = highestStreak;
+        }
+
+        function openReportModal() {
+            updateStatsUI();
+            const modal = document.getElementById('report-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeReportModal() {
+            const modal = document.getElementById('report-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function resetAllProgress() {
+            score = 0;
+            streak = 0;
+            highestStreak = 0;
+            masteredCards.clear();
+            updateStatsUI();
+            renderCurrentCard();
+            renderGridGallery();
+            closeReportModal();
+        }
+
+        /* FILTER & INDEX MANAGEMENT */
+        function updateFilteredIndices() {
+            if (activeFilter === 'all') {
+                currentFilteredIndices = questionsData.map((_, idx) => idx);
+            } else {
+                currentFilteredIndices = questionsData
+                    .map((q, idx) => q.difficulty === activeFilter ? idx : -1)
+                    .filter(idx => idx !== -1);
+            }
+            if (currentFilteredIndices.length === 0) {
+                currentFilteredIndices = [0];
+            }
+            if (!currentFilteredIndices.includes(currentIndex)) {
+                currentIndex = currentFilteredIndices[0];
+            }
+        }
+
+        function setFilter(filterType) {
+            activeFilter = filterType;
+            ['all', 'mudah', 'sedang', 'sulit', 'hots'].forEach(type => {
+                const btn = document.getElementById(`btn-filter-${type}`);
+                if (type === filterType) {
+                    btn.className = "px-3 py-1.5 rounded-xl font-medium transition flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-xl font-medium transition flex items-center gap-1.5 bg-slate-800 text-slate-300 hover:bg-slate-700";
+                }
+            });
+            updateFilteredIndices();
+            if (isFlipped) flipCard(false);
+            renderCurrentCard();
+            renderGridGallery();
+        }
+
+        /* VIEW SWITCHER */
+        function switchView(mode) {
+            viewMode = mode;
+            const singleView = document.getElementById('single-card-view');
+            const gridView = document.getElementById('grid-card-view');
+            const btnSingle = document.getElementById('btn-view-single');
+            const btnGrid = document.getElementById('btn-view-grid');
+
+            if (mode === 'single') {
+                singleView.classList.remove('hidden');
+                gridView.classList.add('hidden');
+                btnSingle.className = "px-3 py-1 rounded-lg font-medium transition bg-slate-800 text-white";
+                btnGrid.className = "px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-white";
+                renderCurrentCard();
+            } else {
+                singleView.classList.add('hidden');
+                gridView.classList.remove('hidden');
+                btnGrid.className = "px-3 py-1 rounded-lg font-medium transition bg-slate-800 text-white";
+                btnSingle.className = "px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-white";
+                renderGridGallery();
+            }
+        }
+
+        /* CARD RENDERER */
+        function renderCurrentCard() {
+            const q = questionsData[currentIndex];
+            if (!q) return;
+
+            // Reset Front States
+            document.getElementById('card-id-text').innerText = q.code;
+            document.getElementById('question-text').innerHTML = q.question;
+            document.getElementById('matrix-display').innerHTML = q.matrixLatex;
+            document.getElementById('hint-text').innerHTML = q.hint;
+            document.getElementById('user-answer-input').value = "";
+            hideFeedback();
+            hideHint();
+
+            // Render Solution Back
+            document.getElementById('solution-container').innerHTML = q.solution;
+
+            // Badges
+            document.getElementById('card-index-badge').innerText = `Soal ${currentIndex + 1} dari ${questionsData.length}`;
+            
+            const diffBadge = document.getElementById('difficulty-badge');
+            const diffMap = {
+                'mudah': { label: 'Mudah • 10 Poin', class: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+                'sedang': { label: 'Sedang • 20 Poin', class: 'bg-sky-500/20 text-sky-400 border-sky-500/30' },
+                'sulit': { label: 'Sulit • 30 Poin', class: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+                'hots': { label: 'HOTS • 50 Poin', class: 'bg-purple-500/20 text-purple-400 border-purple-500/30' }
+            };
+            const currentDiff = diffMap[q.difficulty];
+            diffBadge.innerText = currentDiff.label;
+            diffBadge.className = `px-2.5 py-0.5 rounded-full text-xs font-semibold border ${currentDiff.class}`;
+
+            // Mastered Status
+            const isMastered = masteredCards.has(q.id);
+            const statusTag = document.getElementById('mastered-status-tag');
+            const markBtn = document.getElementById('mark-mastered-btn');
+
+            if (isMastered) {
+                statusTag.classList.remove('hidden');
+                markBtn.className = "bg-slate-700 text-emerald-400 px-4 py-2 rounded-xl font-semibold transition flex items-center gap-1.5 border border-emerald-500/40";
+                markBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Sudah Dikuasai';
+            } else {
+                statusTag.classList.add('hidden');
+                markBtn.className = "bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-semibold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20";
+                markBtn.innerHTML = '<i class="fa-solid fa-check"></i> Tandai Paham';
+            }
+
+            // Typeset MathJax across the full card element (Question, Matrix, Hint, Solution)
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                const cardEl = document.getElementById('flashcard-element');
+                MathJax.typesetClear([cardEl]);
+                MathJax.typesetPromise([cardEl]).catch(err => console.log(err));
+            }
+        }
+
+        /* 3D FLIP LOGIC */
+        function flipCard(playSound = true) {
+            const cardEl = document.getElementById('flashcard-element');
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                cardEl.classList.add('is-flipped');
+            } else {
+                cardEl.classList.remove('is-flipped');
+            }
+            if (playSound) sfx.playFlip();
+        }
+
+        /* ANSWER CHECKER LOGIC */
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') checkAnswer();
+        }
+
+        function checkAnswer() {
+            const q = questionsData[currentIndex];
+            const inputVal = document.getElementById('user-answer-input').value.trim();
+            const feedbackEl = document.getElementById('feedback-banner');
+
+            if (!inputVal) {
+                showFeedback("Silakan ketikkan jawaban Anda terlebih dahulu.", "warning");
+                return;
+            }
+
+            const isCorrect = q.acceptedAnswers.includes(inputVal);
+
+            if (isCorrect) {
+                sfx.playCorrect();
+                showFeedback(`Benar! Jawaban tepat. (+${q.points} Poin)`, "success");
+                
+                if (!masteredCards.has(q.id)) {
+                    score += q.points;
+                    masteredCards.add(q.id);
+                }
+                
+                streak += 1;
+                if (streak > highestStreak) highestStreak = streak;
+                
+                updateStatsUI();
+                renderCurrentCard();
+
+            } else {
+                sfx.playWrong();
+                streak = 0;
+                updateStatsUI();
+                showFeedback("Jawaban belum tepat. Coba periksa kembali atau klik 'Lihat Pembahasan'.", "error");
+            }
+        }
+
+        function showFeedback(msg, type) {
+            const el = document.getElementById('feedback-banner');
+            el.classList.remove('hidden', 'bg-emerald-500/20', 'text-emerald-300', 'border-emerald-500/40', 'bg-rose-500/20', 'text-rose-300', 'border-rose-500/40', 'bg-amber-500/20', 'text-amber-300', 'border-amber-500/40');
+            
+            if (type === 'success') {
+                el.classList.add('bg-emerald-500/20', 'text-emerald-300', 'border', 'border-emerald-500/40');
+                el.innerHTML = `<i class="fa-solid fa-circle-check mr-1.5"></i> ${msg}`;
+            } else if (type === 'error') {
+                el.classList.add('bg-rose-500/20', 'text-rose-300', 'border', 'border-rose-500/40');
+                el.innerHTML = `<i class="fa-solid fa-circle-xmark mr-1.5"></i> ${msg}`;
+            } else {
+                el.classList.add('bg-amber-500/20', 'text-amber-300', 'border', 'border-amber-500/40');
+                el.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> ${msg}`;
+            }
+        }
+
+        function hideFeedback() {
+            document.getElementById('feedback-banner').classList.add('hidden');
+        }
+
+        /* HINT DRAWER */
+        function toggleHint() {
+            const hintBox = document.getElementById('hint-box');
+            const hintBtnLabel = document.getElementById('hint-btn-label');
+            if (hintBox.classList.contains('hidden')) {
+                hintBox.classList.remove('hidden');
+                hintBtnLabel.innerText = "Sembunyikan Petunjuk";
+            } else {
+                hintBox.classList.add('hidden');
+                hintBtnLabel.innerText = "Tampilkan Petunjuk";
+            }
+        }
+
+        function hideHint() {
+            document.getElementById('hint-box').classList.add('hidden');
+            document.getElementById('hint-btn-label').innerText = "Tampilkan Petunjuk";
+        }
+
+        /* MASTERED TOGGLE */
+        function markAsMastered() {
+            const q = questionsData[currentIndex];
+            if (!masteredCards.has(q.id)) {
+                masteredCards.add(q.id);
+                score += q.points;
+                sfx.playCorrect();
+            } else {
+                masteredCards.delete(q.id);
+                score = Math.max(0, score - q.points);
+            }
+            updateStatsUI();
+            renderCurrentCard();
+        }
+
+        /* CARD NAVIGATION */
+        function nextCard() {
+            const currentPos = currentFilteredIndices.indexOf(currentIndex);
+            if (currentPos < currentFilteredIndices.length - 1) {
+                currentIndex = currentFilteredIndices[currentPos + 1];
+            } else {
+                currentIndex = currentFilteredIndices[0]; // Loop back
+            }
+            if (isFlipped) flipCard(false);
+            renderCurrentCard();
+        }
+
+        function prevCard() {
+            const currentPos = currentFilteredIndices.indexOf(currentIndex);
+            if (currentPos > 0) {
+                currentIndex = currentFilteredIndices[currentPos - 1];
+            } else {
+                currentIndex = currentFilteredIndices[currentFilteredIndices.length - 1];
+            }
+            if (isFlipped) flipCard(false);
+            renderCurrentCard();
+        }
+
+        function randomCard() {
+            const randPos = Math.floor(Math.random() * currentFilteredIndices.length);
+            currentIndex = currentFilteredIndices[randPos];
+            if (isFlipped) flipCard(false);
+            renderCurrentCard();
+        }
+
+        function resetCurrentCardState() {
+            if (isFlipped) flipCard(false);
+            renderCurrentCard();
+        }
+
+        /* GRID GALLERY RENDERER */
+        function renderGridGallery() {
+            const gridContainer = document.getElementById('cards-grid-container');
+            gridContainer.innerHTML = "";
+
+            questionsData.forEach((q, idx) => {
+                // Check filter condition
+                if (activeFilter !== 'all' && q.difficulty !== activeFilter) return;
+
+                const isMastered = masteredCards.has(q.id);
+                const cardCard = document.createElement('div');
+                cardCard.className = `p-4 rounded-xl border transition cursor-pointer flex flex-col justify-between h-40 ${
+                    isMastered 
+                    ? 'bg-slate-900/90 border-emerald-500/50 hover:border-emerald-400' 
+                    : 'bg-slate-900/60 border-slate-800 hover:border-indigo-500/50 hover:bg-slate-800/80'
+                }`;
+
+                const diffColors = {
+                    'mudah': 'text-emerald-400',
+                    'sedang': 'text-sky-400',
+                    'sulit': 'text-amber-400',
+                    'hots': 'text-purple-400'
+                };
+
+                cardCard.onclick = () => {
+                    currentIndex = idx;
+                    switchView('single');
+                };
+
+                cardCard.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono font-bold text-slate-400">${q.code}</span>
+                        <span class="text-xs font-semibold ${diffColors[q.difficulty]} flex items-center gap-1">
+                            ${isMastered ? '<i class="fa-solid fa-circle-check text-emerald-400"></i>' : ''}
+                            ${q.points} pt
+                        </span>
+                    </div>
+                    <div class="my-2 text-xs text-slate-200 line-clamp-2 font-medium">
+                        ${q.title}
+                    </div>
+                    <div class="flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-800/80 pt-2">
+                        <span>Soal #${q.id}</span>
+                        <span class="text-indigo-400 font-medium">Latihan <i class="fa-solid fa-arrow-right text-[10px]"></i></span>
+                    </div>
+                `;
+                gridContainer.appendChild(cardCard);
+            });
+
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetClear([gridContainer]);
+                MathJax.typesetPromise([gridContainer]).catch(err => console.log(err));
+            }
+        }
+    </script>
+</body>
+</html>
