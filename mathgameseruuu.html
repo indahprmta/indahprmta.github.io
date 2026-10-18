@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Matematika SMA Interaktif</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- MathJax 3 Configuration for proper Inline Math rendering -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            min-height: 100vh;
+        }
+
+        /* 3D Flip Card Animation Styles */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1;
+        }
+    </style>
+</head>
+<body class="text-slate-100 flex flex-col justify-between p-4 md:p-6 min-h-screen">
+
+    <!-- Header & Dashboard -->
+    <header class="max-w-6xl mx-auto w-full mb-6">
+        <div class="bg-slate-900/80 backdrop-blur-md border border-slate-700/60 rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-3 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl shadow-lg">
+                    <i class="fa-solid fa-square-root-variable text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400">
+                        MathFlash SMA
+                    </h1>
+                    <p class="text-xs text-slate-400">Media Pembelajaran & Latihan Interaktif Siswa</p>
+                </div>
+            </div>
+
+            <!-- Dashboard Stats -->
+            <div class="flex flex-wrap items-center justify-center gap-3 w-full md:w-auto">
+                <!-- Total Score -->
+                <div class="bg-slate-800/90 border border-indigo-500/30 px-4 py-2 rounded-xl flex items-center space-x-3">
+                    <i class="fa-solid fa-trophy text-amber-400 text-lg"></i>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Total Poin</div>
+                        <div id="score-display" class="text-xl font-bold text-amber-300">0 / 0</div>
+                    </div>
+                </div>
+
+                <!-- Answered Stats -->
+                <div class="bg-slate-800/90 border border-slate-700 px-4 py-2 rounded-xl flex items-center space-x-3">
+                    <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Terjawab</div>
+                        <div id="progress-display" class="text-xl font-bold text-slate-200">0 / 20</div>
+                    </div>
+                </div>
+
+                <!-- Total Timer -->
+                <div class="bg-slate-800/90 border border-slate-700 px-4 py-2 rounded-xl flex items-center space-x-3">
+                    <i class="fa-solid fa-stopwatch text-cyan-400 text-lg"></i>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Waktu Total</div>
+                        <div id="timer-display" class="text-xl font-mono font-bold text-cyan-300">00:00</div>
+                    </div>
+                </div>
+
+                <!-- Control Buttons -->
+                <button id="btn-shuffle" onclick="shuffleQuestions()" class="bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-xl transition shadow-lg hover:shadow-indigo-500/25 active:scale-95" title="Acak Soal">
+                    <i class="fa-solid fa-shuffle"></i>
+                </button>
+                <button id="btn-reset" onclick="resetApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 p-3 rounded-xl transition active:scale-95" title="Reset Semua">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-6xl mx-auto w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- Left: Question Number Selector (Grid 20) -->
+        <section class="lg:col-span-4 bg-slate-900/60 backdrop-blur-md border border-slate-800 p-5 rounded-2xl shadow-xl">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Pilih Nomor Soal</h2>
+                <span class="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-full border border-slate-700">20 Soal</span>
+            </div>
+
+            <!-- Number Grid -->
+            <div id="number-grid" class="grid grid-cols-5 gap-2.5">
+                <!-- Numbers 1 to 20 will be dynamically rendered here -->
+            </div>
+
+            <!-- Difficulty Legend -->
+            <div class="mt-6 pt-4 border-t border-slate-800 text-xs text-slate-400 flex flex-wrap justify-between gap-2">
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Mudah (+10)</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Sedang (+20)</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Sulit (+30)</span>
+            </div>
+        </section>
+
+        <!-- Right: Flashcard Interactive View -->
+        <section class="lg:col-span-8 flex flex-col items-center">
+            
+            <!-- Flashcard Container -->
+            <div class="w-full h-[480px] perspective-1000 relative">
+                <div id="flashcard" class="w-full h-full transform-style-3d relative rounded-3xl shadow-2xl transition-all duration-500">
+
+                    <!-- CARD FRONT (Question) -->
+                    <div class="absolute inset-0 w-full h-full backface-hidden bg-slate-900 border-2 border-indigo-500/40 rounded-3xl p-6 md:p-8 flex flex-col justify-between shadow-2xl bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-slate-950">
+                        <!-- Top Metadata -->
+                        <div class="flex justify-between items-center flex-wrap gap-2">
+                            <div class="flex items-center gap-2">
+                                <span id="card-badge-num" class="bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full">
+                                    Soal #1
+                                </span>
+                                <span id="card-badge-diff" class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-medium px-3 py-1 rounded-full">
+                                    Mudah
+                                </span>
+                            </div>
+                            <!-- Per Question Live Timer -->
+                            <div class="flex items-center gap-3">
+                                <span class="bg-slate-800/90 border border-cyan-500/40 text-cyan-300 text-xs px-3 py-1 rounded-full font-mono font-medium flex items-center gap-1.5 shadow-sm">
+                                    <i class="fa-regular fa-clock animate-pulse text-cyan-400"></i>
+                                    Waktu Soal: <span id="question-timer-display" class="font-bold">00:00</span>
+                                </span>
+                                <span id="card-badge-points" class="text-amber-400 text-sm font-bold flex items-center gap-1">
+                                    <i class="fa-solid fa-star text-xs"></i> 10 Poin
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Question Content -->
+                        <div class="my-auto text-center px-2 md:px-6">
+                            <div id="question-topic" class="text-xs uppercase tracking-widest text-indigo-400 mb-2 font-semibold">Persamaan Kuadrat</div>
+                            <div id="question-text" class="text-lg md:text-xl font-medium text-slate-100 leading-relaxed overflow-y-auto max-h-[220px] p-2">
+                                Loading...
+                            </div>
+                        </div>
+
+                        <!-- Action Hint & Flip Button -->
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-800">
+                            <span class="text-xs text-slate-400 flex items-center gap-1">
+                                <i class="fa-solid fa-circle-info"></i> Kerjakan dulu di kertas, lalu klik Balik Kartu!
+                            </span>
+                            <button onclick="flipCard()" class="w-full sm:w-auto bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-2.5 rounded-xl font-medium text-sm transition shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 active:scale-95">
+                                <i class="fa-solid fa-rotate"></i> Lihat Pembahasan
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- CARD BACK (Answer & Explanation) -->
+                    <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 bg-slate-900 border-2 border-purple-500/40 rounded-3xl p-6 md:p-8 flex flex-col justify-between shadow-2xl bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-purple-950/30 to-slate-950">
+                        <!-- Top Metadata Back -->
+                        <div class="flex justify-between items-center">
+                            <span class="bg-purple-600/30 border border-purple-500/50 text-purple-300 text-xs font-bold px-3 py-1 rounded-full">
+                                Kunci Jawaban & Pembahasan
+                            </span>
+                            <!-- Time spent recorded for this question -->
+                            <span id="recorded-question-time" class="text-xs font-mono text-cyan-300 bg-cyan-950/60 border border-cyan-800/60 px-2.5 py-1 rounded-lg">
+                                <i class="fa-solid fa-hourglass-half mr-1"></i> 00:00
+                            </span>
+                            <button onclick="flipCard()" class="text-slate-400 hover:text-white transition">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+
+                        <!-- Answer & Solution Content -->
+                        <div class="my-auto overflow-y-auto max-h-[250px] pr-2">
+                            <div class="mb-3">
+                                <span class="text-xs text-slate-400">Jawaban Akhir:</span>
+                                <div id="answer-key" class="text-xl md:text-2xl font-extrabold text-emerald-400 mt-1">
+                                    Loading...
+                                </div>
+                            </div>
+                            <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 text-slate-300 text-sm leading-relaxed">
+                                <div class="font-semibold text-purple-300 mb-1">Langkah Pembahasan:</div>
+                                <div id="answer-explanation" class="overflow-x-auto py-1">
+                                    Loading...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Self-Assessment Buttons (Benar / Salah) -->
+                        <div class="pt-3 border-t border-slate-800">
+                            <div id="assessment-controls" class="flex gap-3">
+                                <button onclick="markAnswer(false)" class="flex-1 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 py-2.5 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 active:scale-95">
+                                    <i class="fa-solid fa-xmark"></i> Jawaban Saya Salah
+                                </button>
+                                <button onclick="markAnswer(true)" class="flex-1 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 py-2.5 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 active:scale-95">
+                                    <i class="fa-solid fa-check"></i> Jawaban Saya Benar
+                                </button>
+                            </div>
+                            <div id="status-recorded-msg" class="hidden text-center text-xs text-slate-400 py-2">
+                                <i class="fa-solid fa-check-double text-emerald-400 mr-1"></i> Status jawaban nomor ini telah direkam.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="flex items-center justify-between w-full mt-6 px-2">
+                <button onclick="prevQuestion()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-5 py-2.5 rounded-xl transition text-sm font-medium flex items-center gap-2 active:scale-95 border border-slate-700">
+                    <i class="fa-solid fa-arrow-left"></i> Sebelum
+                </button>
+                
+                <span id="current-card-counter" class="text-xs text-slate-400 font-medium">
+                    Soal 1 dari 20
+                </span>
+
+                <button onclick="nextQuestion()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-5 py-2.5 rounded-xl transition text-sm font-medium flex items-center gap-2 active:scale-95 border border-slate-700">
+                    Lanjut <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Custom Modal Message -->
+    <div id="custom-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl transform transition-all">
+            <div id="modal-icon-container" class="w-16 h-16 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-award"></i>
+            </div>
+            <h3 id="modal-title" class="text-xl font-bold text-white mb-2">Selamat!</h3>
+            <div id="modal-message" class="text-slate-300 text-sm mb-6 leading-relaxed">
+                Pesan modal akan muncul di sini.
+            </div>
+            <button onclick="closeModal()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-xl transition shadow-lg shadow-indigo-500/25">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="max-w-6xl mx-auto w-full mt-8 text-center text-xs text-slate-500 py-3 border-t border-slate-800/60">
+        <p>© 2026 Flashcard Matematika SMA Interaktif | Penulisan Notasi Matematika Sesuai Kaidah Standar TeX</p>
+    </footer>
+
+    <script>
+        // Database 20 Soal Matematika SMA dengan Notasi Matematika Sesuai Kaidah Standar TeX/LaTeX
+        const rawQuestionBank = [
+            {
+                id: 1,
+                topic: "Persamaan Kuadrat",
+                difficulty: "easy",
+                points: 10,
+                question: "Jika akar-akar persamaan $x^2 - 6x + k = 0$ adalah $x_1$ dan $x_2$, serta memenuhi $x_1^2 + x_2^2 = 20$, berapakah nilai $k$?",
+                answer: "$k = 8$",
+                explanation: "Berdasarkan teorema Vieta, dari $x^2 - 6x + k = 0$ diperoleh $x_1 + x_2 = 6$ dan $x_1 x_2 = k$.<br>Gunakan identitas aljabar:<br>$$x_1^2 + x_2^2 = (x_1 + x_2)^2 - 2x_1 x_2$$<br>$$20 = (6)^2 - 2k \\implies 20 = 36 - 2k \\implies 2k = 16 \\implies k = 8$$"
+            },
+            {
+                id: 2,
+                topic: "Fungsi Komposisi",
+                difficulty: "easy",
+                points: 10,
+                question: "Diketahui $f(x) = 2x + 3$ dan $g(x) = x^2 - 1$. Tentukan nilai dari $(f \\circ g)(3)$.",
+                answer: "$(f \\circ g)(3) = 19$",
+                explanation: "Hitung nilai $g(3)$ terlebih dahulu:<br>$$g(3) = 3^2 - 1 = 8$$<br>Substitusikan ke $f(x)$:<br>$$(f \\circ g)(3) = f(g(3)) = f(8) = 2(8) + 3 = 19$$"
+            },
+            {
+                id: 3,
+                topic: "Eksponen & Logaritma",
+                difficulty: "easy",
+                points: 10,
+                question: "Tentukan nilai dari $\\phantom{}^2\\log 8 + \\phantom{}^3\\log 81 - \\phantom{}^5\\log 25$.",
+                answer: "5",
+                explanation: "Dengan menggunakan sifat logaritma $\\phantom{}^a\\log a^n = n$:<br>• $\\phantom{}^2\\log 8 = \\phantom{}^2\\log(2^3) = 3$<br>• $\\phantom{}^3\\log 81 = \\phantom{}^3\\log(3^4) = 4$<br>• $\\phantom{}^5\\log 25 = \\phantom{}^5\\log(5^2) = 2$<br><br>Maka, $3 + 4 - 2 = 5$."
+            },
+            {
+                id: 4,
+                topic: "Barisan & Deret",
+                difficulty: "easy",
+                points: 10,
+                question: "Tentukan suku ke-10 ($U_{10}$) dari barisan aritmetika $5, 8, 11, 14, \\dots$",
+                answer: "$U_{10} = 32$",
+                explanation: "Suku pertama $a = 5$ dan beda $b = 8 - 5 = 3$.<br>Rumus suku ke-$n$ barisan aritmetika adalah $U_n = a + (n - 1)b$.<br>$$U_{10} = 5 + (10 - 1)3 = 5 + 9(3) = 5 + 27 = 32$$"
+            },
+            {
+                id: 5,
+                topic: "Trigonometri Dasar",
+                difficulty: "easy",
+                points: 10,
+                question: "Hitunglah nilai dari $\\sin 30^\\circ + \\cos 60^\\circ - \\tan 45^\\circ$.",
+                answer: "0",
+                explanation: "Substitusikan nilai sudut istimewa:<br>• $\\sin 30^\\circ = \\frac{1}{2}$<br>• $\\cos 60^\\circ = \\frac{1}{2}$<br>• $\\tan 45^\\circ = 1$<br><br>$$\\sin 30^\\circ + \\cos 60^\\circ - \\tan 45^\\circ = \\frac{1}{2} + \\frac{1}{2} - 1 = 0$$"
+            },
+            {
+                id: 6,
+                topic: "Sistem Persamaan Linear",
+                difficulty: "easy",
+                points: 10,
+                question: "Tentukan pasangan penyelesaian $(x, y)$ dari sistem persamaan linear berikut:<br>$$\\begin{cases} 2x + y = 7 \\\\ x - y = 2 \\end{cases}$$",
+                answer: "$(x, y) = (3, 1)$",
+                explanation: "Jumlahkan kedua persamaan untuk mengeliminasi $y$:<br>$$(2x + y) + (x - y) = 7 + 2 \\implies 3x = 9 \\implies x = 3$$<br>Substitusikan $x = 3$ ke persamaan kedua:<br>$$3 - y = 2 \\implies y = 1$$"
+            },
+            {
+                id: 7,
+                topic: "Turunan Fungsi Aljabar",
+                difficulty: "medium",
+                points: 20,
+                question: "Jika $f(x) = (3x^2 - 2)^4$, tentukan nilai turunan pertama $f'(1)$.",
+                answer: "$f'(1) = 24$",
+                explanation: "Gunakan aturan rantai turunan $f(x) = [u(x)]^n \\implies f'(x) = n [u(x)]^{n-1} u'(x)$:<br>$$f'(x) = 4(3x^2 - 2)^3 \\cdot \\frac{d}{dx}(3x^2 - 2) = 4(3x^2 - 2)^3 (6x)$$<br>Substitusikan $x = 1$:<br>$$f'(1) = 4(3(1)^2 - 2)^3 \\cdot 6(1) = 4(1)^3 \\cdot 6 = 24$$"
+            },
+            {
+                id: 8,
+                topic: "Integral Tak Tentu",
+                difficulty: "medium",
+                points: 20,
+                question: "Tentukan hasil dari integral tak tentu $\\int (6x^2 - 4x + 3) \\, dx$.",
+                answer: "$2x^3 - 2x^2 + 3x + C$",
+                explanation: "Gunakan aturan dasar pengintegralan $\\int x^n \\, dx = \\frac{1}{n+1} x^{n+1} + C$:<br>$$\\int (6x^2 - 4x + 3) \\, dx = 6\\left(\\frac{x^3}{3}\\right) - 4\\left(\\frac{x^2}{2}\\right) + 3x + C = 2x^3 - 2x^2 + 3x + C$$"
+            },
+            {
+                id: 9,
+                topic: "Matriks",
+                difficulty: "medium",
+                points: 20,
+                question: "Diberikan matriks $A = \\begin{pmatrix} 2 & 3 \\\\ 1 & 4 \\end{pmatrix}$. Tentukan determinan matriks $A$ ($\\det(A)$).",
+                answer: "$\\det(A) = 5$",
+                explanation: "Untuk matriks $2 \\times 2$, $\\det\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix} = ad - bc$.<br>$$\\det(A) = (2)(4) - (3)(1) = 8 - 3 = 5$$"
+            },
+            {
+                id: 10,
+                topic: "Geometri Dimensi Tiga",
+                difficulty: "medium",
+                points: 20,
+                question: "Pada kubus $ABCD.EFGH$ dengan panjang rusuk $s = 6\\text{ cm}$, tentukan jarak titik $A$ ke titik $G$ (panjang diagonal ruang).",
+                answer: "$AG = 6\\sqrt{3}\\text{ cm}$",
+                explanation: "Panjang diagonal ruang kubus dengan panjang rusuk $s$ dirumuskan sebagai $d = s\\sqrt{3}$.<br>Karena $s = 6\\text{ cm}$, maka:<br>$$AG = 6\\sqrt{3}\\text{ cm}$$"
+            },
+            {
+                id: 11,
+                topic: "Teori Peluang",
+                difficulty: "medium",
+                points: 20,
+                question: "Dua buah dadu adil dilempar bersamaan. Tentukan peluang $P(A)$ muncul mata dadu berjumlah $8$.",
+                answer: "$P(A) = \\dfrac{5}{36}$",
+                explanation: "Banyaknya seluruh ruang sampel $n(S) = 6 \\times 6 = 36$.<br>Kejadian $A$ (jumlah mata dadu 8):<br>$$A = \\{(2,6), (3,5), (4,4), (5,3), (6,2)\\} \\implies n(A) = 5$$<br>Maka peluangnya:<br>$$P(A) = \\frac{n(A)}{n(S)} = \\frac{5}{36}$$"
+            },
+            {
+                id: 12,
+                topic: "Statistika",
+                difficulty: "medium",
+                points: 20,
+                question: "Rata-rata nilai ujian dari $19$ siswa adalah $70$. Jika nilai $1$ siswa baru digabungkan, rata-rata nilainya menjadi $71$. Berapa nilai siswa baru tersebut?",
+                answer: "$90$",
+                explanation: "Gunakan rumus rata-rata gabungan $\\bar{x} = \\frac{\\sum x}{n}$:<br>• Total nilai 19 siswa: $\\sum x_{19} = 19 \\times 70 = 1330$<br>• Total nilai 20 siswa: $\\sum x_{20} = 20 \\times 71 = 1420$<br><br>Nilai siswa baru = $1420 - 1330 = 90$."
+            },
+            {
+                id: 13,
+                topic: "Limit Fungsi Aljabar",
+                difficulty: "medium",
+                points: 20,
+                question: "Hitunglah nilai limit fungsi berikut:<br>$$\\lim_{x \\to 3} \\frac{x^2 - 9}{x - 3}$$",
+                answer: "6",
+                explanation: "Faktorkan bentuk pemfaktoran selisih kuadrat pada pembilang $x^2 - 9 = (x-3)(x+3)$:<br>$$\\lim_{x \\to 3} \\frac{(x - 3)(x + 3)}{x - 3} = \\lim_{x \\to 3} (x + 3) = 3 + 3 = 6$$"
+            },
+            {
+                id: 14,
+                topic: "Trigonometri Lanjutan",
+                difficulty: "hard",
+                points: 30,
+                question: "Jika $\\sin A + \\cos A = \\frac{1}{2}$, tentukan nilai dari $\\sin 2A$.",
+                answer: "$\\sin 2A = -\\dfrac{3}{4}$",
+                explanation: "Kuadratkan kedua ruas persamaan:<br>$$(\\sin A + \\cos A)^2 = \\left(\\frac{1}{2}\\right)^2$$<br>$$\\sin^2 A + \\cos^2 A + 2\\sin A \\cos A = \\frac{1}{4}$$<br>Gunakan identitas $\\sin^2 A + \\cos^2 A = 1$ dan sudut ganda $\\sin 2A = 2\\sin A \\cos A$:<br>$$1 + \\sin 2A = \\frac{1}{4} \\implies \\sin 2A = \\frac{1}{4} - 1 = -\\frac{3}{4}$$"
+            },
+            {
+                id: 15,
+                topic: "Polinomial (Suku Banyak)",
+                difficulty: "hard",
+                points: 30,
+                question: "Jika polinomial $P(x) = 2x^3 - ax^2 + 5x - 6$ habis dibagi oleh $(x - 2)$, tentukan nilai konstanta $a$.",
+                answer: "$a = 5$",
+                explanation: "Berdasarkan Teorema Sisa, jika $P(x)$ habis dibagi $(x - 2)$, maka $P(2) = 0$.<br>$$P(2) = 2(2)^3 - a(2)^2 + 5(2) - 6 = 0$$<br>$$2(8) - 4a + 10 - 6 = 0 \\implies 16 - 4a + 4 = 0$$<br>$$20 - 4a = 0 \\implies 4a = 20 \\implies a = 5$$"
+            },
+            {
+                id: 16,
+                topic: "Vektor",
+                difficulty: "hard",
+                points: 30,
+                question: "Diketahui vektor $\\vec{u} = 2\\hat{i} - \\hat{j} + 2\\hat{k}$ dan $\\vec{v} = 4\\hat{i} + \\hat{j} - 8\\hat{k}$. Tentukan panjang proyeksi ortogonal vektor $\\vec{u}$ pada $\\vec{v}$.",
+                answer: "$|\\vec{p}| = 1$",
+                explanation: "Rumus panjang proyeksi ortogonal $\\vec{u}$ pada $\\vec{v}$ adalah $|\\vec{p}| = \\left| \\frac{\\vec{u} \\cdot \\vec{v}}{|\\vec{v}|} \\right|$.<br>• Hitung produk titik: $\\vec{u} \\cdot \\vec{v} = (2)(4) + (-1)(1) + (2)(-8) = 8 - 1 - 16 = -9$<br>• Panjang vektor $\\vec{v}$: $|\\vec{v}| = \\sqrt{4^2 + 1^2 + (-8)^2} = \\sqrt{16 + 1 + 64} = \\sqrt{81} = 9$<br><br>$$|\\vec{p}| = \\left| \\frac{-9}{9} \\right| = |-1| = 1$$"
+            },
+            {
+                id: 17,
+                topic: "Integral Tentu",
+                difficulty: "hard",
+                points: 30,
+                question: "Hitunglah nilai integral tentu berikut:<br>$$\\int_{0}^{\\pi/2} \\sin^3 x \\cos x \\, dx$$",
+                answer: "$\\dfrac{1}{4}$",
+                explanation: "Gunakan teknik substitusi: Misalkan $u = \\sin x \\implies du = \\cos x \\, dx$.<br>Ubah batas-batas pengintegralan:<br>• Untuk $x = 0 \\implies u = \\sin 0 = 0$<br>• Untuk $x = \\frac{\\pi}{2} \\implies u = \\sin \\left(\\frac{\\pi}{2}\\right) = 1$<br><br>$$\\int_{0}^{1} u^3 \\, du = \\left[ \\frac{1}{4} u^4 \\right]_{0}^{1} = \\frac{1}{4}(1)^4 - 0 = \\frac{1}{4}$$"
+            },
+            {
+                id: 18,
+                topic: "Program Linear",
+                difficulty: "hard",
+                points: 30,
+                question: "Tentukan nilai maksimum fungsi objektif $f(x, y) = 3x + 5y$ dengan kendala:<br>$$x + y \\le 6, \\quad x + 2y \\le 8, \\quad x \\ge 0, \\quad y \\ge 0$$",
+                answer: "22",
+                explanation: "Cari titik-titik pojok daerah penyelesaian:<br>1. Titik potong antar garis $x + y = 6$ dan $x + 2y = 8$ adalah $(4, 2)$.<br>2. Titik-titik pojok daerah penyelesaian: $(0,0), (6,0), (0,4),$ dan $(4,2)$.<br><br>Uji ke fungsi objektif $f(x, y) = 3x + 5y$:<br>• $f(0,0) = 0$<br>• $f(6,0) = 18$<br>• $f(0,4) = 20$<br>• $f(4,2) = 3(4) + 5(2) = 12 + 10 = 22$ (Maksimum)"
+            },
+            {
+                id: 19,
+                topic: "Transformasi Geometri",
+                difficulty: "hard",
+                points: 30,
+                question: "Tentukan bayangan titik $P(3, -2)$ oleh rotasi $R(O, 90^\\circ)$ berlawanan arah jarum jam, dilanjutkan dicerminkan terhadap garis $y = x$.",
+                answer: "$P'' = (3, 2)$",
+                explanation: "1. Rotasi $R(O, 90^\\circ)$ memetakan $(x, y) \\to (-y, x)$:<br>$$P(3, -2) \\xrightarrow{R(O, 90^\\circ)} P'(-(-2), 3) = P'(2, 3)$$<br>2. Refleksi terhadap garis $y = x$ memetakan $(x, y) \\to (y, x)$:<br>$$P'(2, 3) \\xrightarrow{M_{y=x}} P''(3, 2)$$"
+            },
+            {
+                id: 20,
+                topic: "Pertidaksamaan Rasional",
+                difficulty: "hard",
+                points: 30,
+                question: "Tentukan himpunan penyelesaian ($HP$) dari pertidaksamaan rasional berikut:<br>$$\\frac{2x - 1}{x + 3} \\le 1$$",
+                answer: "$-3 < x \\le 4$",
+                explanation: "Nolkan ruas kanan dan samakan penyebut:<br>$$\\frac{2x - 1}{x + 3} - 1 \\le 0 \\implies \\frac{(2x - 1) - (x + 3)}{x + 3} \\le 0 \\implies \\frac{x - 4}{x + 3} \\le 0$$<br>Pembuat nol pembilang $x = 4$ dan syarat penyebut $x + 3 \\neq 0 \\implies x \\neq -3$.<br>Melalui uji garis bilangan, didapatkan himpunan penyelesaian $-3 < x \\le 4$."
+            }
+        ];
+
+        // App State
+        let questions = [...rawQuestionBank];
+        let currentIndex = 0;
+        let userAnswers = {}; // Format: { questionId: { status: 'correct'|'wrong', earnedPoints: number, timeSpent: number } }
+        let isFlipped = false;
+        let totalScore = 0;
+        let maxPossibleScore = 0;
+        
+        // Global Timer State
+        let secondsElapsed = 0;
+        let timerInterval = null;
+
+        // Per-Question Timer State
+        let questionTimes = {}; // Stores cumulative elapsed time in seconds for each question ID
+        let questionTimerInterval = null;
+
+        // Initialize App
+        window.onload = function() {
+            calculateMaxScore();
+            renderNumberGrid();
+            loadQuestion(0);
+            startGlobalTimer();
+        };
+
+        function calculateMaxScore() {
+            maxPossibleScore = questions.reduce((acc, q) => acc + q.points, 0);
+            updateScoreDisplay();
+        }
+
+        // Global Stopwatch Functions
+        function startGlobalTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            secondsElapsed = 0;
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                document.getElementById('timer-display').innerText = formatTime(secondsElapsed);
+            }, 1000);
+        }
+
+        // Per-Question Stopwatch Functions
+        function startQuestionTimer(questionId) {
+            stopQuestionTimer(); // Stop any active timer
+            
+            // Initialize time spent if not already set
+            if (questionTimes[questionId] === undefined) {
+                questionTimes[questionId] = 0;
+            }
+
+            updateQuestionTimerDisplay(questionTimes[questionId]);
+
+            // Only tick if this question hasn't been answered yet
+            if (!userAnswers[questionId]) {
+                questionTimerInterval = setInterval(() => {
+                    questionTimes[questionId]++;
+                    updateQuestionTimerDisplay(questionTimes[questionId]);
+                }, 1000);
+            }
+        }
+
+        function stopQuestionTimer() {
+            if (questionTimerInterval) {
+                clearInterval(questionTimerInterval);
+                questionTimerInterval = null;
+            }
+        }
+
+        function updateQuestionTimerDisplay(seconds) {
+            const formatted = formatTime(seconds);
+            const displayFront = document.getElementById('question-timer-display');
+            const displayBack = document.getElementById('recorded-question-time');
+            
+            if (displayFront) displayFront.innerText = formatted;
+            if (displayBack) displayBack.innerHTML = `<i class="fa-solid fa-hourglass-half mr-1"></i> ${formatted}`;
+        }
+
+        function formatTime(totalSeconds) {
+            const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+            const secs = String(totalSeconds % 60).padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        function renderNumberGrid() {
+            const gridContainer = document.getElementById('number-grid');
+            gridContainer.innerHTML = '';
+
+            questions.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.className = getGridButtonClass(q, idx);
+                btn.innerHTML = `
+                    <span class="text-sm font-bold">${idx + 1}</span>
+                    <span class="text-[9px] block opacity-80">${q.points}p</span>
+                `;
+                btn.onclick = () => selectQuestion(idx);
+                gridContainer.appendChild(btn);
+            });
+        }
+
+        function getGridButtonClass(question, index) {
+            const isSelected = index === currentIndex;
+            const answerState = userAnswers[question.id];
+
+            let baseClass = "p-2 rounded-xl text-center border transition-all duration-200 flex flex-col items-center justify-center relative shadow-sm ";
+            
+            if (isSelected) {
+                baseClass += "ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-900 scale-105 ";
+            }
+
+            if (!answerState) {
+                // Not answered yet
+                if (question.difficulty === 'easy') baseClass += "bg-slate-800 border-emerald-500/40 text-emerald-300 hover:bg-emerald-950/40";
+                else if (question.difficulty === 'medium') baseClass += "bg-slate-800 border-amber-500/40 text-amber-300 hover:bg-amber-950/40";
+                else baseClass += "bg-slate-800 border-rose-500/40 text-rose-300 hover:bg-rose-950/40";
+            } else if (answerState.status === 'correct') {
+                baseClass += "bg-emerald-600 border-emerald-400 text-white font-bold";
+            } else {
+                baseClass += "bg-rose-600/80 border-rose-400 text-white font-bold";
+            }
+
+            return baseClass;
+        }
+
+        function loadQuestion(index) {
+            currentIndex = index;
+            const q = questions[currentIndex];
+
+            // Reset Card Flip State if currently flipped
+            if (isFlipped) {
+                const card = document.getElementById('flashcard');
+                card.classList.remove('rotate-y-180');
+                isFlipped = false;
+            }
+
+            // Update Badges & Front Content
+            document.getElementById('card-badge-num').innerText = `Soal #${currentIndex + 1}`;
+            document.getElementById('card-badge-points').innerHTML = `<i class="fa-solid fa-star text-xs"></i> ${q.points} Poin`;
+            document.getElementById('question-topic').innerText = q.topic;
+            document.getElementById('question-text').innerHTML = q.question;
+
+            // Difficulty Styling Badge
+            const diffBadge = document.getElementById('card-badge-diff');
+            if (q.difficulty === 'easy') {
+                diffBadge.innerText = "Mudah";
+                diffBadge.className = "bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-medium px-3 py-1 rounded-full";
+            } else if (q.difficulty === 'medium') {
+                diffBadge.innerText = "Sedang";
+                diffBadge.className = "bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-medium px-3 py-1 rounded-full";
+            } else {
+                diffBadge.innerText = "Sulit";
+                diffBadge.className = "bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs font-medium px-3 py-1 rounded-full";
+            }
+
+            // Back Content
+            document.getElementById('answer-key').innerHTML = q.answer;
+            document.getElementById('answer-explanation').innerHTML = q.explanation;
+
+            // Start & Display Per-Question Timer for this active Question
+            startQuestionTimer(q.id);
+
+            // Check if answered
+            const isAnswered = !!userAnswers[q.id];
+            const controls = document.getElementById('assessment-controls');
+            const statusMsg = document.getElementById('status-recorded-msg');
+
+            if (isAnswered) {
+                controls.classList.add('hidden');
+                statusMsg.classList.remove('hidden');
+            } else {
+                controls.classList.remove('hidden');
+                statusMsg.classList.add('hidden');
+            }
+
+            // Counter
+            document.getElementById('current-card-counter').innerText = `Soal ${currentIndex + 1} dari ${questions.length}`;
+
+            // Re-render MathJax Formulas
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise();
+            }
+
+            renderNumberGrid();
+        }
+
+        function flipCard() {
+            const card = document.getElementById('flashcard');
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                card.classList.add('rotate-y-180');
+            } else {
+                card.classList.remove('rotate-y-180');
+            }
+        }
+
+        function selectQuestion(index) {
+            loadQuestion(index);
+        }
+
+        function nextQuestion() {
+            if (currentIndex < questions.length - 1) {
+                loadQuestion(currentIndex + 1);
+            } else {
+                loadQuestion(0); // Loop back
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                loadQuestion(currentIndex - 1);
+            } else {
+                loadQuestion(questions.length - 1);
+            }
+        }
+
+        function markAnswer(isCorrect) {
+            const currentQ = questions[currentIndex];
+            
+            // Stop per-question timer when answered
+            stopQuestionTimer();
+            const timeSpentForThisQuestion = questionTimes[currentQ.id] || 0;
+
+            // Record Answer along with time spent
+            userAnswers[currentQ.id] = {
+                status: isCorrect ? 'correct' : 'wrong',
+                earnedPoints: isCorrect ? currentQ.points : 0,
+                timeSpent: timeSpentForThisQuestion
+            };
+
+            // Update Total Score
+            calculateScore();
+
+            // Refresh UI
+            loadQuestion(currentIndex);
+
+            // Check Game Completion
+            if (Object.keys(userAnswers).length === questions.length) {
+                showCompletionModal();
+            }
+        }
+
+        function calculateScore() {
+            totalScore = 0;
+            Object.values(userAnswers).forEach(ans => {
+                totalScore += ans.earnedPoints;
+            });
+
+            updateScoreDisplay();
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('score-display').innerText = `${totalScore} / ${maxPossibleScore}`;
+            document.getElementById('progress-display').innerText = `${Object.keys(userAnswers).length} / ${questions.length}`;
+        }
+
+        // Shuffle Question Array
+        function shuffleQuestions() {
+            stopQuestionTimer();
+            for (let i = questions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [questions[i], questions[j]] = [questions[j], questions[i]];
+            }
+            userAnswers = {}; // Reset user progress on shuffle
+            questionTimes = {}; // Reset question individual timers
+            calculateScore();
+            loadQuestion(0);
+            
+            showCustomModal(
+                "Soal Berhasil Diacak!",
+                "Urutan 20 soal telah diacak kembali. Timer per soal telah di-reset. Selamat berlatih!",
+                "fa-shuffle"
+            );
+        }
+
+        function resetApp() {
+            stopQuestionTimer();
+            userAnswers = {};
+            questionTimes = {};
+            calculateScore();
+            startGlobalTimer();
+            loadQuestion(0);
+            showCustomModal(
+                "Reset Berhasil",
+                "Semua jawaban dan progres waktu pengerjaan telah dikembalikan ke awal.",
+                "fa-rotate-right"
+            );
+        }
+
+        function showCompletionModal() {
+            stopQuestionTimer();
+            const minutes = Math.floor(secondsElapsed / 60);
+            const seconds = secondsElapsed % 60;
+            const percentage = Math.round((totalScore / maxPossibleScore) * 100);
+
+            // Calculate average time per question
+            const totalQTimes = Object.values(questionTimes).reduce((a, b) => a + b, 0);
+            const avgSeconds = Math.round(totalQTimes / questions.length);
+
+            let icon = "fa-trophy";
+            let message = `
+                <div class="space-y-2 text-left bg-slate-950/60 p-4 rounded-xl border border-slate-800 my-2">
+                    <p class="text-center font-semibold text-emerald-400 text-base mb-3">Luar biasa! Kamu telah menyelesaikan semua 20 soal.</p>
+                    <div class="flex justify-between border-b border-slate-800 pb-1 text-xs">
+                        <span class="text-slate-400">Total Skor:</span>
+                        <span class="font-bold text-amber-300">${totalScore} / ${maxPossibleScore} (${percentage}%)</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-800 pb-1 text-xs">
+                        <span class="text-slate-400">Total Waktu:</span>
+                        <span class="font-bold text-cyan-300">${minutes} m ${seconds} s</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">Rata-rata per Soal:</span>
+                        <span class="font-bold text-indigo-300">${avgSeconds} detik / soal</span>
+                    </div>
+                </div>
+            `;
+
+            showCustomModal("Latihan Selesai! 🎉", message, icon);
+        }
+
+        function showCustomModal(title, text, iconClass) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerHTML = text;
+            const container = document.getElementById('modal-icon-container');
+            container.innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
